@@ -1,8 +1,7 @@
 ﻿const UI = {
-    init: function() { this.checkAuth(); this.bindEvents(); },
+    init: function() { this.checkAuth(); this.bindEvents(); this.initDropdowns(); },
 
     bindEvents: function() {
-        // ログイン
         if(document.getElementById('btn-login')) document.getElementById('btn-login').addEventListener('click', () => this.login());
         
         // キャスト管理
@@ -10,15 +9,48 @@
         if(document.getElementById('btn-save-cast')) document.getElementById('btn-save-cast').addEventListener('click', () => this.saveCast());
         if(document.getElementById('btn-close-modal')) document.getElementById('btn-close-modal').addEventListener('click', () => this.closeModal());
         
-        // 週間シフト (キャスト選択時)
+        // 週間シフト
         const wsCast = document.getElementById('ws-cast');
         if(wsCast) wsCast.addEventListener('change', (e) => this.loadCastWeeklyData(e.target.value));
         if(document.getElementById('btn-save-weekly')) document.getElementById('btn-save-weekly').addEventListener('click', () => this.saveWeeklyShift());
 
-        // メニュー管理 (★ここが消えていたので復活！)
-        if(document.getElementById('btn-new-menu')) document.getElementById('btn-new-menu').addEventListener('click', () => this.openMenuModal());
+        // メニュー管理 (コースとオプションを分離)
+        if(document.getElementById('btn-new-course')) document.getElementById('btn-new-course').addEventListener('click', () => this.openMenuModal('course'));
+        if(document.getElementById('btn-new-option')) document.getElementById('btn-new-option').addEventListener('click', () => this.openMenuModal('option'));
         if(document.getElementById('btn-save-menu')) document.getElementById('btn-save-menu').addEventListener('click', () => this.saveMenu());
         if(document.getElementById('btn-close-menu-modal')) document.getElementById('btn-close-menu-modal').addEventListener('click', () => this.closeMenuModal());
+    },
+
+    // --- 初期化：キャスト用プルダウン生成 ---
+    initDropdowns: function() {
+        const createOpt = (start, end, step = 1, suffix = '') => {
+            let opts = '';
+            for(let i=start; i<=end; i+=step) opts += `<option value="${i}">${i}${suffix}</option>`;
+            return opts;
+        };
+
+        // キャスト管理画面用
+        if(document.getElementById('c-age')) {
+            document.getElementById('c-age').innerHTML = createOpt(18, 50, 1, '歳');
+            document.getElementById('c-height').innerHTML = createOpt(135, 175, 1, 'cm');
+            document.getElementById('c-bust').innerHTML = createOpt(70, 120, 1);
+            document.getElementById('c-waist').innerHTML = createOpt(50, 100, 1);
+            document.getElementById('c-hip').innerHTML = createOpt(70, 120, 1);
+            
+            const cups = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+            let cupOpts = ''; cups.forEach(c => cupOpts += `<option value="${c}">${c}カップ</option>`);
+            document.getElementById('c-cup').innerHTML = cupOpts;
+        }
+
+        // メニュー管理画面用 (コース用)
+        if(document.getElementById('m-price-course')) {
+            document.getElementById('m-price-course').innerHTML = createOpt(10000, 40000, 2000, '円');
+            
+            let timeOpts = '';
+            // 60, 75, 90 ... 120
+            [60, 75, 90, 105, 120].forEach(t => timeOpts += `<option value="${t}">${t}分</option>`);
+            document.getElementById('m-minutes-course').innerHTML = timeOpts;
+        }
     },
 
     checkAuth: function() {
@@ -75,13 +107,37 @@
             document.getElementById('c-name').value = data.name;
             document.getElementById('c-age').value = data.age;
             document.getElementById('c-height').value = data.height;
-            document.getElementById('c-sizes').value = data.sizes;
             document.getElementById('c-image').value = data.image_url || '';
             document.getElementById('c-intro').value = data.introduction || '';
             document.getElementById('c-active').value = data.is_active;
+
+            // スリーサイズ分解 (例: "B85(D)-W58-H88")
+            // 単純な数値保存の場合はそのまま、結合文字の場合は分解
+            const sizes = data.sizes || '';
+            // 正規表現で分解を試みる
+            const match = sizes.match(/B(\d+)\(([A-Z])\)-W(\d+)-H(\d+)/);
+            if(match) {
+                document.getElementById('c-bust').value = match[1];
+                document.getElementById('c-cup').value = match[2];
+                document.getElementById('c-waist').value = match[3];
+                document.getElementById('c-hip').value = match[4];
+            } else {
+                // 初期値
+                document.getElementById('c-bust').value = 85;
+                document.getElementById('c-cup').value = 'D';
+                document.getElementById('c-waist').value = 58;
+                document.getElementById('c-hip').value = 88;
+            }
         } else {
             document.getElementById('form-cast').reset();
             document.getElementById('c-id').value = '';
+            // 初期値をセット
+            document.getElementById('c-age').value = 20;
+            document.getElementById('c-height').value = 160;
+            document.getElementById('c-bust').value = 85;
+            document.getElementById('c-cup').value = 'D';
+            document.getElementById('c-waist').value = 58;
+            document.getElementById('c-hip').value = 88;
         }
     },
     closeModal: function() { document.getElementById('cast-modal').classList.add('hidden'); },
@@ -90,12 +146,19 @@
         rows.forEach(r => { if(JSON.parse(r.dataset.json).id === id) this.openModal(JSON.parse(r.dataset.json)); });
     },
     saveCast: async function() {
+        // スリーサイズを結合
+        const b = document.getElementById('c-bust').value;
+        const cup = document.getElementById('c-cup').value;
+        const w = document.getElementById('c-waist').value;
+        const h = document.getElementById('c-hip').value;
+        const sizesStr = `B${b}(${cup})-W${w}-H${h}`;
+
         const data = {
             id: document.getElementById('c-id').value,
             name: document.getElementById('c-name').value,
             age: document.getElementById('c-age').value,
             height: document.getElementById('c-height').value,
-            sizes: document.getElementById('c-sizes').value,
+            sizes: sizesStr,
             image_url: document.getElementById('c-image').value,
             introduction: document.getElementById('c-intro').value,
             is_active: document.getElementById('c-active').value
@@ -177,49 +240,75 @@
         alert('週間シフトを保存しました！');
     },
 
-    // --- メニュー管理 (★ここが復活！) ---
+    // --- メニュー管理 (コースとオプションを分離) ---
     loadMenu: async function() {
         const res = await this.postData('get_menu');
-        const list = document.getElementById('menu-list');
-        list.innerHTML = '';
+        const courseList = document.getElementById('course-list');
+        const optionList = document.getElementById('option-list');
+        courseList.innerHTML = '';
+        optionList.innerHTML = '';
+
         res.data.forEach(m => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${m.type==='course'?'<span style="background:#e0e7ff;color:#3730a3;padding:4px 8px;border-radius:4px;font-size:12px;">コース</span>':'<span style="background:#f1f5f9;color:#475569;padding:4px 8px;border-radius:4px;font-size:12px;">OP</span>'}</td>
-                            <td>${m.name}</td>
-                            <td>${parseInt(m.price).toLocaleString()}円</td>
-                            <td>${m.minutes}分</td>
-                            <td>${m.cast_name||'全員'}</td>
-                            <td><button class="btn-primary btn-sm" onclick="UI.editMenu('${m.id}')">編集</button></td>`;
+            tr.innerHTML = `<td>${m.name}</td><td>${parseInt(m.price).toLocaleString()}円</td><td>${m.minutes ? m.minutes + '分' : '-'}</td><td>${m.cast_name||'全員'}</td><td><button class="btn-primary btn-sm" onclick="UI.editMenu('${m.id}')">編集</button></td>`;
             tr.dataset.json = JSON.stringify(m);
-            list.appendChild(tr);
+
+            if(m.type === 'course') {
+                courseList.appendChild(tr);
+            } else {
+                optionList.appendChild(tr);
+            }
         });
     },
-    openMenuModal: function(data = null) {
+    openMenuModal: function(type = 'course') {
         document.getElementById('menu-modal').classList.remove('hidden');
-        if(data) {
-            document.getElementById('m-id').value = data.id;
-            document.getElementById('m-type').value = data.type;
-            document.getElementById('m-name').value = data.name;
-            document.getElementById('m-price').value = data.price;
-            document.getElementById('m-minutes').value = data.minutes;
-            document.getElementById('m-cast').value = data.cast_id;
+        document.getElementById('form-menu').reset();
+        document.getElementById('m-id').value = '';
+        document.getElementById('m-type').value = type;
+
+        // タイプに応じて入力欄を切り替え
+        if(type === 'course') {
+            document.getElementById('modal-title').textContent = 'コース編集';
+            document.getElementById('input-area-course').classList.remove('hidden');
+            document.getElementById('input-area-option').classList.add('hidden');
         } else {
-            document.getElementById('form-menu').reset();
-            document.getElementById('m-id').value = '';
+            document.getElementById('modal-title').textContent = 'オプション編集';
+            document.getElementById('input-area-course').classList.add('hidden');
+            document.getElementById('input-area-option').classList.remove('hidden');
         }
     },
     closeMenuModal: function() { document.getElementById('menu-modal').classList.add('hidden'); },
     editMenu: function(id) {
-        const rows = document.querySelectorAll('#menu-list tr');
-        rows.forEach(r => { if(JSON.parse(r.dataset.json).id === id) this.openMenuModal(JSON.parse(r.dataset.json)); });
+        // 全リストから探す
+        const res = this.postData('get_menu').then(res => { // 簡易的に再取得して探す
+             const target = res.data.find(m => m.id === id);
+             if(target) {
+                 this.openMenuModal(target.type);
+                 document.getElementById('m-id').value = target.id;
+                 document.getElementById('m-name').value = target.name;
+                 document.getElementById('m-cast').value = target.cast_id;
+                 
+                 if(target.type === 'course') {
+                     document.getElementById('m-price-course').value = target.price;
+                     document.getElementById('m-minutes-course').value = target.minutes;
+                 } else {
+                     document.getElementById('m-price-option').value = target.price;
+                     document.getElementById('m-minutes-option').value = target.minutes || 0;
+                 }
+             }
+        });
     },
     saveMenu: async function() {
+        const type = document.getElementById('m-type').value;
+        const price = type === 'course' ? document.getElementById('m-price-course').value : document.getElementById('m-price-option').value;
+        const minutes = type === 'course' ? document.getElementById('m-minutes-course').value : document.getElementById('m-minutes-option').value;
+
         const data = {
             id: document.getElementById('m-id').value,
-            type: document.getElementById('m-type').value,
+            type: type,
             name: document.getElementById('m-name').value,
-            price: document.getElementById('m-price').value,
-            minutes: document.getElementById('m-minutes').value,
+            price: price,
+            minutes: minutes,
             cast_id: document.getElementById('m-cast').value,
             is_active: true
         };
