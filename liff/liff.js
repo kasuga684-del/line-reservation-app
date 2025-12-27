@@ -17,7 +17,7 @@
         try {
             const res = await fetch(url, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
             return await res.json();
-        } catch (e) { console.error(e); alert('通信エラーが発生しました。時間を置いて再試行してください。'); throw e; }
+        } catch (e) { console.error(e); alert('通信エラー。再読み込みしてください。'); throw e; }
     },
 
     loadCasts: async function() {
@@ -30,9 +30,7 @@
         this.castsData.forEach(c => {
             const card = document.createElement('div');
             card.className = 'cast-card';
-            // ここでクリックイベントを設定
             card.onclick = () => this.showCastDetail(c.id);
-            
             const imgUrl = c.image_url ? c.image_url : 'https://via.placeholder.com/300x400/ffb6c1/ffffff?text=No+Image';
             card.innerHTML = `
                 <div class="cast-img-wrapper"><div class="cast-img" style="background-image: url('${imgUrl}');"></div></div>
@@ -43,41 +41,35 @@
     },
 
     showCastDetail: async function(castId) {
-        console.log('Clicked cast:', castId);
         const cast = this.castsData.find(c => c.id === castId);
         if(!cast) return;
-        
         this.selectedCastId = castId;
         
-        // 画面切り替え（データ取得前に切り替えて体感速度を上げる）
         this.switchView('view-detail');
         window.scrollTo(0, 0);
 
-        // 基本情報セット
         const imgUrl = cast.image_url ? cast.image_url : 'https://via.placeholder.com/400x500/ffb6c1/ffffff?text=No+Image';
         document.getElementById('detail-img').style.backgroundImage = `url('${imgUrl}')`;
         document.getElementById('detail-name').textContent = cast.name;
         document.getElementById('detail-age').textContent = `(${cast.age}歳)`;
-        document.getElementById('detail-meta').textContent = `T${cast.height}cm / BWH: ${cast.sizes}`;
         document.getElementById('detail-intro').innerHTML = cast.introduction ? cast.introduction.replace(/\n/g, '<br>') : 'よろしくお願いします！';
         
-        // スケジュール表の取得
-        document.getElementById('schedule-matrix').innerHTML = '<div style="padding:20px;text-align:center;">スケジュール確認中...</div>';
-        await this.loadWeeklySchedule(castId);
-    },
-
-    loadWeeklySchedule: async function(castId) {
-        // GAS側で新機能がデプロイされていないとここでエラーになる
+        // マトリクス読み込み開始
+        const matrixEl = document.getElementById('schedule-matrix');
+        if(matrixEl) matrixEl.innerHTML = '<div style="padding:20px;text-align:center;">スケジュール確認中...</div>';
+        
         try {
             const res = await this.postData('get_weekly_availability', { cast_id: castId });
             this.renderMatrix(res.data);
         } catch(e) {
-            document.getElementById('schedule-matrix').innerHTML = '<div style="color:red;padding:20px;text-align:center;">スケジュールの読み込みに失敗しました。<br>お店にお電話ください。</div>';
+            if(matrixEl) matrixEl.innerHTML = '<div style="padding:20px;text-align:center;color:red;">読み込み失敗</div>';
         }
     },
 
     renderMatrix: function(data) {
         const matrix = document.getElementById('schedule-matrix');
+        if(!matrix) return;
+
         let html = '<table class="sch-table"><thead><tr><th>時間</th>';
         data.forEach(d => {
             const dateObj = new Date(d.date);
@@ -88,8 +80,8 @@
         });
         html += '</tr></thead><tbody>';
 
-        const startHour = 12; // 開始時間
-        const endHour = 29;   // 終了時間(翌5時)
+        const startHour = 12; 
+        const endHour = 29;   
         
         for (let h = startHour; h < endHour; h++) {
             for (let min = 0; min < 60; min += 30) {
@@ -111,7 +103,6 @@
                         if (timeVal >= sVal && timeVal < eVal) isShift = true;
                     }
                     
-                    // 予約済み判定
                     let isBooked = day.bookings.includes(timeStr);
 
                     if (!isShift || isBooked) {

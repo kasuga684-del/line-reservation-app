@@ -1,12 +1,58 @@
-﻿<!DOCTYPE html><html lang='ja'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>出勤管理</title><link rel='stylesheet' href='../common/ui.css'></head><body>
-<div id='app-container'><nav id='sidebar'><h2><span id='shop-name-display'>店舗</span> 管理</h2>
-<a href='index.html' class='menu-item '>ダッシュボード</a>
-<a href='casts.html' class='menu-item '>キャスト管理</a>
-<a href='schedule.html' class='menu-item active'>出勤管理</a>
-<a href='menu.html' class='menu-item '>メニュー管理</a>
-<a href='reservations.html' class='menu-item '>予約一覧</a>
+﻿<!DOCTYPE html>
+<html lang='ja'>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<title>出勤管理 (週間)</title>
+<link rel='stylesheet' href='../common/ui.css'>
+<style>
+    .ws-row { display: flex; align-items: center; border-bottom: 1px solid #eee; padding: 15px; background: #fff; }
+    .ws-row:nth-child(even) { background: #f9f9f9; }
+    .ws-date { width: 180px; font-weight: bold; font-size: 16px; color: #333; }
+    .ws-inputs { display: flex; align-items: center; gap: 10px; }
+    .ws-inputs input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+    .day-sun { color: red; }
+    .day-sat { color: blue; }
+</style>
+</head>
+<body>
+<div id='app-container'>
+<nav id='sidebar'><h2><span id='shop-name-display'>店舗</span> 管理</h2>
+<a href='index.html' class='menu-item'>ダッシュボード</a>
+<a href='casts.html' class='menu-item'>キャスト管理</a>
+<a href='schedule.html' class='menu-item active'>出勤管理 (週間)</a>
+<a href='menu.html' class='menu-item'>メニュー管理</a>
+<a href='reservations.html' class='menu-item'>予約一覧</a>
 <a class='menu-item' onclick='localStorage.clear(); location.reload();'>ログアウト</a></nav>
-<main id='main-content'><div class='card'><div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;'><h3>出勤管理</h3><input type='date' id='schedule-date' style='padding:8px; font-size:16px;'></div>
-<table><thead><tr><th style='width:20%;'>名前</th><th style='width:40%;'>時間</th><th style='width:20%;'>状態</th><th style='width:20%;'>備考</th></tr></thead><tbody id='schedule-list'></tbody></table>
-<div style='margin-top:20px; text-align:right;'><button id='btn-save-schedule' class='btn-primary' style='width:200px;'>変更を保存する</button></div></div></main></div>
-<script src='../common/config.js'></script><script src='../common/ui.js'></script></body></html>
+
+<main id='main-content'>
+    <div class='card'>
+        <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;'>
+            <h3>週間シフト入力</h3>
+        </div>
+        
+        <div style='background:#f0f2f5; padding:20px; border-radius:8px; margin-bottom:20px;'>
+            <label style='font-weight:bold; margin-right:10px;'>キャストを選択:</label>
+            <select id='ws-cast' style='padding:10px; width:300px; font-size:16px; border-radius:4px; border:1px solid #ccc;'></select>
+            <p style='margin-top:5px; color:#666; font-size:14px;'>※キャストを選ぶと、現在登録されているシフトが表示されます。</p>
+        </div>
+
+        <div id='ws-container' style='border:1px solid #ddd; border-radius:8px; overflow:hidden;'>
+            <div style="padding:20px; text-align:center;">キャストを選択してください</div>
+        </div>
+
+        <div style='margin-top:20px; text-align:right;'>
+            <button id='btn-save-weekly' class='btn-primary' style='width:200px; padding:15px; font-size:16px;'>この内容で保存する</button>
+        </div>
+    </div>
+</main>
+</div>
+<script src='../common/config.js'></script>
+<script src='../common/ui.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    UI.init();
+    UI.loadWeeklyShiftEditor(); // 専用の読み込み関数を実行
+});
+</script>
+</body>
+</html>
