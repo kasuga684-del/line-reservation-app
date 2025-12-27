@@ -2,13 +2,23 @@
     init: function() { this.checkAuth(); this.bindEvents(); },
         // --- 週間シフト管理 ---
         // --- 週間シフト管理 (schedule.html用) ---
+        // --- 週間シフト管理 (30分単位プルダウン) ---
     generateTimeOptions: function() {
         let options = '<option value="">--</option>';
-        for(let h=0; h<24; h++) {
-            for(let m=0; m<60; m+=15) {
-                const val = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
-                options += `<option value="${val}">${val}</option>`;
-            }
+        // 12:00 ～ 翌11:30 までを生成（営業時間をカバー）
+        const startHour = 12; 
+        const totalHours = 24; 
+        
+        for(let i=0; i<totalHours * 2; i++) {
+            const totalMin = (startHour * 60) + (i * 30);
+            let h = Math.floor(totalMin / 60);
+            const m = totalMin % 60;
+            
+            // 24時を超えたら0時に戻す表記にする（または25時表記でも可、今回は24時表記）
+            let hDisp = h % 24;
+            
+            const val = `${hDisp.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+            options += `<option value="${val}">${val}</option>`;
         }
         return options;
     },
@@ -39,7 +49,7 @@
         if(!container) return;
         container.innerHTML = '';
         
-        // プルダウンの選択肢を作成
+        // 30分刻みの選択肢を作成
         const timeOptions = this.generateTimeOptions();
 
         for(let i=0; i<7; i++) {
@@ -77,6 +87,8 @@
             const endInp = row.querySelector('.ws-end');
             
             if(target && target.shift) {
+                // 保存されているデータが「00:02」などでも、プルダウンに無ければ空になる
+                // 近い時間に合わせる処理を入れるとなお親切だが、今回は再入力してもらう
                 inp.value = target.shift.start || '';
                 endInp.value = target.shift.end || '';
             }
@@ -300,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('menu-list')) UI.loadMenu();
     if(document.getElementById('res-list')) UI.loadReservations();
 });
+
 
 
 

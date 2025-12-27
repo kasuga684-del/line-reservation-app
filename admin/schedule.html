@@ -9,7 +9,7 @@
     .ws-row:nth-child(even) { background: #f9f9f9; }
     .ws-date { width: 150px; font-weight: bold; font-size: 16px; color: #333; }
     .ws-inputs { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
-    .ws-inputs select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; width: 120px; }
+    .ws-inputs select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; width: 150px; cursor: pointer; background: #fff; }
     .day-sun { color: red; } .day-sat { color: blue; }
 </style>
 </head>
@@ -18,7 +18,7 @@
 <nav id='sidebar'><h2><span id='shop-name-display'>店舗</span> 管理</h2><a href='index.html' class='menu-item'>ダッシュボード</a><a href='casts.html' class='menu-item'>キャスト管理</a><a href='schedule.html' class='menu-item active'>出勤管理 (週間)</a><a href='menu.html' class='menu-item'>メニュー管理</a><a href='reservations.html' class='menu-item'>予約一覧</a><a class='menu-item' onclick='localStorage.clear(); location.reload();'>ログアウト</a></nav>
 <main id='main-content'>
     <div class='card'>
-        <h3>週間シフト入力</h3>
+        <h3>週間シフト入力 (30分単位)</h3>
         <div style='background:#f0f2f5; padding:20px; border-radius:8px; margin-bottom:20px;'>
             <label style='font-weight:bold; margin-right:10px;'>キャストを選択:</label>
             <select id='ws-cast' style='padding:10px; width:300px; font-size:16px;'></select>
