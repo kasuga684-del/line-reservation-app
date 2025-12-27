@@ -1,6 +1,90 @@
 ﻿const UI = {
     init: function() { this.checkAuth(); this.bindEvents(); },
+        // --- 週間シフト管理 ---
+    loadWeeklyShiftEditor: async function() {
+        // 1. キャスト一覧取得
+        const res = await this.postData('get_casts');
+        const sel = document.getElementById('ws-cast');
+        sel.innerHTML = '<option value="">キャストを選択してください</option>';
+        res.data.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name;
+            sel.appendChild(opt);
+        });
+        
+        // 日付ヘッダー生成
+        this.renderWeeklyHeader();
+    },
+    
+    renderWeeklyHeader: function() {
+        const today = new Date();
+        const container = document.getElementById('ws-container');
+        container.innerHTML = '';
+        
+        for(let i=0; i<7; i++) {
+            const d = new Date();
+            d.setDate(today.getDate() + i);
+            const dateStr = d.toISOString().split('T')[0];
+            const dayStr = ['日','月','火','水','木','金','土'][d.getDay()];
+            
+            const row = document.createElement('div');
+            row.className = 'ws-row';
+            row.innerHTML = `
+                <div class="ws-date">${dateStr} (${dayStr})</div>
+                <div class="ws-inputs">
+                    <input type="time" class="ws-start" data-date="${dateStr}"> ～ 
+                    <input type="time" class="ws-end" data-date="${dateStr}">
+                </div>
+            `;
+            container.appendChild(row);
+        }
+    },
+
+    loadCastWeeklyData: async function(castId) {
+        if(!castId) return;
+        // マトリクス取得用APIを流用して、現在のシフトを埋める
+        const res = await this.postData('get_weekly_availability', { cast_id: castId });
+        
+        const inputs = document.querySelectorAll('.ws-start');
+        inputs.forEach(inp => {
+            const date = inp.dataset.date;
+            const target = res.data.find(d => d.date === date);
+            
+            const row = inp.closest('.ws-row');
+            const endInp = row.querySelector('.ws-end');
+            
+            if(target && target.shift) {
+                inp.value = target.shift.start || '';
+                endInp.value = target.shift.end || '';
+            } else {
+                inp.value = '';
+                endInp.value = '';
+            }
+        });
+    },
+
+    saveWeeklyShift: async function() {
+        const castId = document.getElementById('ws-cast').value;
+        if(!castId) { alert('キャストを選択してください'); return; }
+        
+        const shifts = [];
+        const rows = document.querySelectorAll('.ws-row');
+        rows.forEach(r => {
+            const start = r.querySelector('.ws-start').value;
+            const end = r.querySelector('.ws-end').value;
+            const date = r.querySelector('.ws-start').dataset.date;
+            shifts.push({ date: date, start: start, end: end });
+        });
+
+        await this.postData('save_weekly_shift', { cast_id: castId, shifts: shifts });
+        alert('週間シフトを保存しました！');
+    },
+
+    // 既存のbindEventsに追加
     bindEvents: function() {
+                if(document.getElementById('ws-cast')) document.getElementById('ws-cast').addEventListener('change', (e) => this.loadCastWeeklyData(e.target.value));
+        if(document.getElementById('btn-save-weekly')) document.getElementById('btn-save-weekly').addEventListener('click', () => this.saveWeeklyShift());
         if(document.getElementById('btn-login')) document.getElementById('btn-login').addEventListener('click', () => this.login());
         if(document.getElementById('btn-save-cast')) document.getElementById('btn-save-cast').addEventListener('click', () => this.saveCast());
         if(document.getElementById('btn-new-cast')) document.getElementById('btn-new-cast').addEventListener('click', () => this.openModal());
@@ -199,4 +283,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('menu-list')) UI.loadMenu();
     if(document.getElementById('res-list')) UI.loadReservations();
 });
+
 

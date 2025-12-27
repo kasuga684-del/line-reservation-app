@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang='ja'>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<title>週間シフト入力</title>
+<link rel='stylesheet' href='../common/ui.css'>
+<style>
+    .ws-row { display: flex; align-items: center; border-bottom: 1px solid #eee; padding: 10px; }
+    .ws-date { width: 150px; font-weight: bold; }
+    .ws-inputs input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id='app-container'>
+<nav id='sidebar'><h2><span id='shop-name-display'>店舗</span> 管理</h2>
+<a href='index.html' class='menu-item '>ダッシュボード</a>
+<a href='casts.html' class='menu-item '>キャスト管理</a>
+<a href='schedule.html' class='menu-item '>出勤管理(日別)</a>
+<a href='weekly_shift.html' class='menu-item active'>週間シフト入力</a>
+<a href='menu.html' class='menu-item '>メニュー管理</a>
+<a href='reservations.html' class='menu-item '>予約一覧</a>
+<a class='menu-item' onclick='localStorage.clear(); location.reload();'>ログアウト</a></nav>
+<main id='main-content'>
+    <div class='card'>
+        <h3>週間シフト入力</h3>
+        <p>キャストを選択して、向こう1週間のシフトを入力してください。</p>
+        
+        <div style='margin-bottom:20px;'>
+            <select id='ws-cast' style='padding:10px; width:100%; max-width:300px; font-size:16px;'></select>
+        </div>
+
+        <div id='ws-container'>
+            </div>
+
+        <div style='margin-top:20px; text-align:right;'>
+            <button id='btn-save-weekly' class='btn-primary' style='width:200px;'>保存する</button>
+        </div>
+    </div>
+</main>
+</div>
+<script src='../common/config.js'></script>
+<script src='../common/ui.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    UI.init();
+    UI.loadWeeklyShiftEditor();
+});
+</script>
+</body>
+</html>
