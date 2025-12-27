@@ -43,19 +43,24 @@
         this.renderWeeklyHeader();
     },
     
-    renderWeeklyHeader: function() {
+        renderWeeklyHeader: function() {
         const today = new Date();
         const container = document.getElementById('ws-container');
         if(!container) return;
         container.innerHTML = '';
         
-        // 30分刻みの選択肢を作成
         const timeOptions = this.generateTimeOptions();
 
         for(let i=0; i<7; i++) {
             const d = new Date();
             d.setDate(today.getDate() + i);
-            const dateStr = d.toISOString().split('T')[0];
+            
+            // 時差ボケを防ぐため、手動で YYYY-MM-DD を作る
+            const year = d.getFullYear();
+            const month = (d.getMonth() + 1).toString().padStart(2, '0');
+            const day = d.getDate().toString().padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+            
             const dayStr = ['日','月','火','水','木','金','土'][d.getDay()];
             const dayClass = d.getDay() === 0 ? 'day-sun' : (d.getDay() === 6 ? 'day-sat' : '');
             
@@ -312,6 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('menu-list')) UI.loadMenu();
     if(document.getElementById('res-list')) UI.loadReservations();
 });
+
 
 
 
