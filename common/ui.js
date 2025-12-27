@@ -4,7 +4,7 @@
     bindEvents: function() {
         if(document.getElementById('btn-login')) document.getElementById('btn-login').addEventListener('click', () => this.login());
         
-        // キャスト・出勤・メニュー
+        // 各種イベント
         if(document.getElementById('btn-save-cast')) document.getElementById('btn-save-cast').addEventListener('click', () => this.saveCast());
         if(document.getElementById('btn-new-cast')) document.getElementById('btn-new-cast').addEventListener('click', () => this.openModal());
         if(document.getElementById('btn-close-modal')) document.getElementById('btn-close-modal').addEventListener('click', () => this.closeModal());
@@ -17,9 +17,18 @@
 
     checkAuth: function() {
         const token = localStorage.getItem('auth_token');
-        if(!token && !document.getElementById('login-overlay')) location.href = 'index.html'; 
-        if(token && document.getElementById('shop-name-display')) {
-            document.getElementById('shop-name-display').textContent = localStorage.getItem('shop_name');
+        const overlay = document.getElementById('login-overlay');
+        
+        if (token) {
+            // ★ログイン済みなら黒い画面を消す（ここが修正点！）
+            if(overlay) overlay.classList.add('hidden');
+            
+            if(document.getElementById('shop-name-display')) {
+                document.getElementById('shop-name-display').textContent = localStorage.getItem('shop_name');
+            }
+        } else {
+            // 未ログインなら表示
+            if(overlay) overlay.classList.remove('hidden');
         }
     },
 
@@ -174,7 +183,7 @@
         this.loadMenu();
     },
 
-    // --- 予約管理 (今回追加) ---
+    // --- 予約管理 ---
     loadReservations: async function() {
         const res = await this.postData('get_reservations');
         const list = document.getElementById('res-list');
@@ -187,13 +196,13 @@
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${r.date} ${r.time}</td>
+                <td>${r.date.split('T')[0]} ${r.time}</td>
                 <td>${r.cast_name}</td>
                 <td>${r.customer_name}</td>
                 <td>${r.course_name}</td>
                 <td>${statusBadge}</td>
                 <td>
-                    ${r.status === 'pending' ? `<button onclick="UI.updateRes('${r.id}', 'confirmed')" style="background:#28a745; color:white;">確定する</button>` : ''}
+                    ${r.status === 'pending' ? `<button onclick="UI.updateRes('${r.id}', 'confirmed')" style="background:#28a745; color:white;">確定</button>` : ''}
                     ${r.status !== 'canceled' ? `<button onclick="UI.updateRes('${r.id}', 'canceled')" style="background:#dc3545; color:white;">却下</button>` : ''}
                 </td>
             `;
