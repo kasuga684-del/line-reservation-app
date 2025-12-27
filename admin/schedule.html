@@ -7,52 +7,26 @@
 <style>
     .ws-row { display: flex; align-items: center; border-bottom: 1px solid #eee; padding: 15px; background: #fff; }
     .ws-row:nth-child(even) { background: #f9f9f9; }
-    .ws-date { width: 180px; font-weight: bold; font-size: 16px; color: #333; }
-    .ws-inputs { display: flex; align-items: center; gap: 10px; }
-    .ws-inputs input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
-    .day-sun { color: red; }
-    .day-sat { color: blue; }
+    .ws-date { width: 150px; font-weight: bold; font-size: 16px; color: #333; }
+    .ws-inputs { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
+    .ws-inputs select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; width: 120px; }
+    .day-sun { color: red; } .day-sat { color: blue; }
 </style>
 </head>
 <body>
 <div id='app-container'>
-<nav id='sidebar'><h2><span id='shop-name-display'>店舗</span> 管理</h2>
-<a href='index.html' class='menu-item'>ダッシュボード</a>
-<a href='casts.html' class='menu-item'>キャスト管理</a>
-<a href='schedule.html' class='menu-item active'>出勤管理 (週間)</a>
-<a href='menu.html' class='menu-item'>メニュー管理</a>
-<a href='reservations.html' class='menu-item'>予約一覧</a>
-<a class='menu-item' onclick='localStorage.clear(); location.reload();'>ログアウト</a></nav>
-
+<nav id='sidebar'><h2><span id='shop-name-display'>店舗</span> 管理</h2><a href='index.html' class='menu-item'>ダッシュボード</a><a href='casts.html' class='menu-item'>キャスト管理</a><a href='schedule.html' class='menu-item active'>出勤管理 (週間)</a><a href='menu.html' class='menu-item'>メニュー管理</a><a href='reservations.html' class='menu-item'>予約一覧</a><a class='menu-item' onclick='localStorage.clear(); location.reload();'>ログアウト</a></nav>
 <main id='main-content'>
     <div class='card'>
-        <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;'>
-            <h3>週間シフト入力</h3>
-        </div>
-        
+        <h3>週間シフト入力</h3>
         <div style='background:#f0f2f5; padding:20px; border-radius:8px; margin-bottom:20px;'>
             <label style='font-weight:bold; margin-right:10px;'>キャストを選択:</label>
-            <select id='ws-cast' style='padding:10px; width:300px; font-size:16px; border-radius:4px; border:1px solid #ccc;'></select>
-            <p style='margin-top:5px; color:#666; font-size:14px;'>※キャストを選ぶと、現在登録されているシフトが表示されます。</p>
+            <select id='ws-cast' style='padding:10px; width:300px; font-size:16px;'></select>
         </div>
-
-        <div id='ws-container' style='border:1px solid #ddd; border-radius:8px; overflow:hidden;'>
-            <div style="padding:20px; text-align:center;">キャストを選択してください</div>
-        </div>
-
-        <div style='margin-top:20px; text-align:right;'>
-            <button id='btn-save-weekly' class='btn-primary' style='width:200px; padding:15px; font-size:16px;'>この内容で保存する</button>
-        </div>
+        <div id='ws-container' style='border:1px solid #ddd; border-radius:8px; overflow:hidden;'><div style="padding:20px; text-align:center;">キャストを選択してください</div></div>
+        <div style='margin-top:20px; text-align:right;'><button id='btn-save-weekly' class='btn-primary' style='width:200px; padding:15px; font-size:16px;'>保存する</button></div>
     </div>
 </main>
 </div>
-<script src='../common/config.js'></script>
-<script src='../common/ui.js'></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    UI.init();
-    UI.loadWeeklyShiftEditor(); // 専用の読み込み関数を実行
-});
-</script>
-</body>
-</html>
+<script src='../common/config.js'></script><script src='../common/ui.js'></script>
+<script>document.addEventListener('DOMContentLoaded', () => { UI.init(); UI.loadWeeklyShiftEditor(); });</script></body></html>

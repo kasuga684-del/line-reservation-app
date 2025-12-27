@@ -1,11 +1,24 @@
 ﻿const UI = {
     init: function() { this.checkAuth(); this.bindEvents(); },
         // --- 週間シフト管理 ---
+        // --- 週間シフト管理 (schedule.html用) ---
+    generateTimeOptions: function() {
+        let options = '<option value="">--</option>';
+        for(let h=0; h<24; h++) {
+            for(let m=0; m<60; m+=15) {
+                const val = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+                options += `<option value="${val}">${val}</option>`;
+            }
+        }
+        return options;
+    },
+
     loadWeeklyShiftEditor: async function() {
-        // 1. キャスト一覧取得
         const res = await this.postData('get_casts');
         const sel = document.getElementById('ws-cast');
-        sel.innerHTML = '<option value="">キャストを選択してください</option>';
+        if(!sel) return;
+        
+        sel.innerHTML = '<option value="">▼ キャストを選択してください</option>';
         res.data.forEach(c => {
             const opt = document.createElement('option');
             opt.value = c.id;
@@ -13,28 +26,36 @@
             sel.appendChild(opt);
         });
         
-        // 日付ヘッダー生成
+        sel.addEventListener('change', (e) => this.loadCastWeeklyData(e.target.value));
+        const btn = document.getElementById('btn-save-weekly');
+        if(btn) btn.addEventListener('click', () => this.saveWeeklyShift());
+        
         this.renderWeeklyHeader();
     },
     
     renderWeeklyHeader: function() {
         const today = new Date();
         const container = document.getElementById('ws-container');
+        if(!container) return;
         container.innerHTML = '';
         
+        // プルダウンの選択肢を作成
+        const timeOptions = this.generateTimeOptions();
+
         for(let i=0; i<7; i++) {
             const d = new Date();
             d.setDate(today.getDate() + i);
             const dateStr = d.toISOString().split('T')[0];
             const dayStr = ['日','月','火','水','木','金','土'][d.getDay()];
+            const dayClass = d.getDay() === 0 ? 'day-sun' : (d.getDay() === 6 ? 'day-sat' : '');
             
             const row = document.createElement('div');
             row.className = 'ws-row';
             row.innerHTML = `
-                <div class="ws-date">${dateStr} (${dayStr})</div>
+                <div class="ws-date ${dayClass}">${dateStr} (${dayStr})</div>
                 <div class="ws-inputs">
-                    <input type="time" class="ws-start" data-date="${dateStr}"> ～ 
-                    <input type="time" class="ws-end" data-date="${dateStr}">
+                    <select class="ws-start" data-date="${dateStr}">${timeOptions}</select> ～ 
+                    <select class="ws-end" data-date="${dateStr}">${timeOptions}</select>
                 </div>
             `;
             container.appendChild(row);
@@ -42,24 +63,22 @@
     },
 
     loadCastWeeklyData: async function(castId) {
-        if(!castId) return;
-        // マトリクス取得用APIを流用して、現在のシフトを埋める
+        if(!castId) { this.renderWeeklyHeader(); return; }
+        const container = document.getElementById('ws-container');
+        container.innerHTML = '<div style="padding:20px;text-align:center;">データを読み込み中...</div>';
         const res = await this.postData('get_weekly_availability', { cast_id: castId });
+        this.renderWeeklyHeader();
         
         const inputs = document.querySelectorAll('.ws-start');
         inputs.forEach(inp => {
             const date = inp.dataset.date;
             const target = res.data.find(d => d.date === date);
-            
             const row = inp.closest('.ws-row');
             const endInp = row.querySelector('.ws-end');
             
             if(target && target.shift) {
                 inp.value = target.shift.start || '';
                 endInp.value = target.shift.end || '';
-            } else {
-                inp.value = '';
-                endInp.value = '';
             }
         });
     },
@@ -67,7 +86,6 @@
     saveWeeklyShift: async function() {
         const castId = document.getElementById('ws-cast').value;
         if(!castId) { alert('キャストを選択してください'); return; }
-        
         const shifts = [];
         const rows = document.querySelectorAll('.ws-row');
         rows.forEach(r => {
@@ -76,7 +94,6 @@
             const date = r.querySelector('.ws-start').dataset.date;
             shifts.push({ date: date, start: start, end: end });
         });
-
         await this.postData('save_weekly_shift', { cast_id: castId, shifts: shifts });
         alert('週間シフトを保存しました！');
     },
@@ -283,6 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('menu-list')) UI.loadMenu();
     if(document.getElementById('res-list')) UI.loadReservations();
 });
+
 
 
 
