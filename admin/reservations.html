@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html lang='ja'>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<title>予約管理</title>
+<link rel='stylesheet' href='../common/ui.css'>
+<style>
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+th { background-color: #f2f2f2; }
+button { margin-right: 5px; cursor: pointer; border: none; padding: 5px 10px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id='app-container'>
+<nav id='sidebar'><h2><span id='shop-name-display'>店舗</span> 管理</h2>
+<a href='index.html' class='menu-item'>ダッシュボード</a>
+<a href='casts.html' class='menu-item'>キャスト管理</a>
+<a href='schedule.html' class='menu-item'>出勤管理</a>
+<a href='menu.html' class='menu-item'>メニュー管理</a>
+<a href='reservations.html' class='menu-item active'>予約一覧</a>
+<a class='menu-item' onclick='localStorage.clear(); location.reload();'>ログアウト</a></nav>
+<main id='main-content'>
+    <div class='card'>
+        <h3>予約一覧</h3>
+        <p>※「未確定」の予約を確認し、確定処理を行ってください。</p>
+        <table>
+            <thead><tr><th>日時</th><th>指名</th><th>お客様名</th><th>コース</th><th>状態</th><th>操作</th></tr></thead>
+            <tbody id='res-list'></tbody>
+        </table>
+    </div>
+</main>
+</div>
+<script src='../common/config.js'></script><script src='../common/ui.js'></script>
+</body>
+</html>

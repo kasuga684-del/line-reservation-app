@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html lang='ja'>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<title>メニュー管理</title>
+<link rel='stylesheet' href='../common/ui.css'>
+<style>
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+th { background-color: #f2f2f2; }
+.modal-content { width: 400px; padding: 30px; background: white; border-radius: 8px; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+.form-group input, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; }
+</style>
+</head>
+<body>
+<div id='app-container'>
+<nav id='sidebar'><h2><span id='shop-name-display'>店舗</span> 管理</h2>
+<a href='index.html' class='menu-item'>ダッシュボード</a>
+<a href='casts.html' class='menu-item'>キャスト管理</a>
+<a href='schedule.html' class='menu-item'>出勤管理</a>
+<a href='menu.html' class='menu-item active'>メニュー管理</a>
+<a class='menu-item'>予約一覧</a>
+<a class='menu-item' onclick='localStorage.clear(); location.reload();'>ログアウト</a></nav>
+<main id='main-content'>
+    <div class='card'>
+        <div style='display:flex; justify-content:space-between; align-items:center;'>
+            <h3>メニュー・オプション一覧</h3>
+            <button id='btn-new-menu' class='btn-primary' style='width:auto;'>＋ 新規追加</button>
+        </div>
+        <table>
+            <thead><tr><th>種別</th><th>名称</th><th>料金</th><th>時間</th><th>対象</th><th>操作</th></tr></thead>
+            <tbody id='menu-list'></tbody>
+        </table>
+    </div>
+</main>
+</div>
+
+<div id='menu-modal' class='hidden' style='position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center;'>
+    <div class='modal-content'>
+        <h3>メニュー情報</h3>
+        <form id='form-menu' onsubmit='return false;'>
+            <input type='hidden' id='m-id'>
+            <div class='form-group'><label>種別</label>
+                <select id='m-type'><option value='course'>コース</option><option value='option'>オプション</option></select>
+            </div>
+            <div class='form-group'><label>名称</label><input type='text' id='m-name' placeholder='例: 60分コース'></div>
+            <div class='form-group'><label>料金 (円)</label><input type='number' id='m-price' placeholder='15000'></div>
+            <div class='form-group'><label>時間 (分)</label><input type='number' id='m-minutes' placeholder='60'></div>
+            <div class='form-group'><label>対象キャスト</label>
+                <select id='m-cast'><option value='ALL'>全員共通</option></select>
+                <small>※個別設定はまだ未実装(ALLのみ)</small>
+            </div>
+            <div style='display:flex; gap:10px;'>
+                <button id='btn-close-menu-modal' style='flex:1;'>キャンセル</button>
+                <button id='btn-save-menu' class='btn-primary' style='flex:1;'>保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script src='../common/config.js'></script><script src='../common/ui.js'></script>
+</body>
+</html>
