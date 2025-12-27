@@ -199,3 +199,4 @@ document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('menu-list')) UI.loadMenu();
     if(document.getElementById('res-list')) UI.loadReservations();
 });
+
