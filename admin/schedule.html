@@ -1,32 +1,17 @@
-﻿<!DOCTYPE html>
-<html lang='ja'>
-<head>
-<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>
-<title>出勤管理 (週間)</title>
-<link rel='stylesheet' href='../common/ui.css'>
-<style>
-    .ws-row { display: flex; align-items: center; border-bottom: 1px solid #eee; padding: 15px; background: #fff; }
-    .ws-row:nth-child(even) { background: #f9f9f9; }
-    .ws-date { width: 150px; font-weight: bold; font-size: 16px; color: #333; }
-    .ws-inputs { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
-    .ws-inputs select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; width: 150px; cursor: pointer; background: #fff; }
-    .day-sun { color: red; } .day-sat { color: blue; }
-</style>
-</head>
-<body>
-<div id='app-container'>
-<nav id='sidebar'><h2><span id='shop-name-display'>店舗</span> 管理</h2><a href='index.html' class='menu-item'>ダッシュボード</a><a href='casts.html' class='menu-item'>キャスト管理</a><a href='schedule.html' class='menu-item active'>出勤管理 (週間)</a><a href='menu.html' class='menu-item'>メニュー管理</a><a href='reservations.html' class='menu-item'>予約一覧</a><a class='menu-item' onclick='localStorage.clear(); location.reload();'>ログアウト</a></nav>
-<main id='main-content'>
-    <div class='card'>
-        <h3>週間シフト入力 (30分単位)</h3>
-        <div style='background:#f0f2f5; padding:20px; border-radius:8px; margin-bottom:20px;'>
-            <label style='font-weight:bold; margin-right:10px;'>キャストを選択:</label>
-            <select id='ws-cast' style='padding:10px; width:300px; font-size:16px;'></select>
-        </div>
-        <div id='ws-container' style='border:1px solid #ddd; border-radius:8px; overflow:hidden;'><div style="padding:20px; text-align:center;">キャストを選択してください</div></div>
-        <div style='margin-top:20px; text-align:right;'><button id='btn-save-weekly' class='btn-primary' style='width:200px; padding:15px; font-size:16px;'>保存する</button></div>
+﻿<!DOCTYPE html><html lang='ja'><head><meta charset='UTF-8'><title>シフト管理</title><link rel='stylesheet' href='../common/ui.css'></head><body>
+<div id='app-container'><nav id='sidebar'>
+    <h2><span>DEMO</span> SHOP</h2>
+    <a href='index.html' class='menu-item '>ホーム / ダッシュボード</a>
+    <a href='casts.html' class='menu-item '>キャスト管理</a>
+    <a href='schedule.html' class='menu-item active'>出勤シフト管理</a>
+    <a href='menu.html' class='menu-item '>メニュー・料金管理</a>
+    <a href='reservations.html' class='menu-item '>予約リスト</a>
+    <div style="margin-top:auto; border-top:1px solid #334155;">
+        <a class='menu-item' onclick='localStorage.clear(); location.reload();'>ログアウト</a>
     </div>
-</main>
-</div>
-<script src='../common/config.js'></script><script src='../common/ui.js'></script>
-<script>document.addEventListener('DOMContentLoaded', () => { UI.init(); UI.loadWeeklyShiftEditor(); });</script></body></html>
+</nav>
+<main id='main-content'><div class='card'><h3>出勤シフト入力 (30分単位)</h3>
+<div style='background:#f8fafc; padding:20px; border-radius:8px; margin-bottom:20px; border:1px solid #e2e8f0;'><label style='font-weight:bold; margin-right:10px;'>対象キャスト:</label><select id='ws-cast' style='width:300px;'></select></div>
+<div id='ws-container' style='border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;'><div style='padding:40px; text-align:center; color:#94a3b8;'>キャストを選択してください</div></div>
+<div style='margin-top:30px; text-align:right;'><button id='btn-save-weekly' class='btn-primary' style='min-width:200px;'>シフトを保存する</button></div></div></main></div>
+<script src='../common/config.js'></script><script src='../common/ui.js'></script><script>document.addEventListener('DOMContentLoaded', ()=>{UI.init(); UI.loadWeeklyShiftEditor();});</script></body></html>

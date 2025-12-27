@@ -1,134 +1,26 @@
 ﻿const UI = {
     init: function() { this.checkAuth(); this.bindEvents(); },
-        // --- 週間シフト管理 ---
-        // --- 週間シフト管理 (schedule.html用) ---
-        // --- 週間シフト管理 (30分単位プルダウン) ---
-    generateTimeOptions: function() {
-        let options = '<option value="">--</option>';
-        // 12:00 ～ 翌11:30 までを生成（営業時間をカバー）
-        const startHour = 12; 
-        const totalHours = 24; 
-        
-        for(let i=0; i<totalHours * 2; i++) {
-            const totalMin = (startHour * 60) + (i * 30);
-            let h = Math.floor(totalMin / 60);
-            const m = totalMin % 60;
-            
-            // 24時を超えたら0時に戻す表記にする（または25時表記でも可、今回は24時表記）
-            let hDisp = h % 24;
-            
-            const val = `${hDisp.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
-            options += `<option value="${val}">${val}</option>`;
-        }
-        return options;
-    },
 
-    loadWeeklyShiftEditor: async function() {
-        const res = await this.postData('get_casts');
-        const sel = document.getElementById('ws-cast');
-        if(!sel) return;
-        
-        sel.innerHTML = '<option value="">▼ キャストを選択してください</option>';
-        res.data.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c.id;
-            opt.textContent = c.name;
-            sel.appendChild(opt);
-        });
-        
-        sel.addEventListener('change', (e) => this.loadCastWeeklyData(e.target.value));
-        const btn = document.getElementById('btn-save-weekly');
-        if(btn) btn.addEventListener('click', () => this.saveWeeklyShift());
-        
-        this.renderWeeklyHeader();
-    },
-    
-        renderWeeklyHeader: function() {
-        const today = new Date();
-        const container = document.getElementById('ws-container');
-        if(!container) return;
-        container.innerHTML = '';
-        
-        const timeOptions = this.generateTimeOptions();
-
-        for(let i=0; i<7; i++) {
-            const d = new Date();
-            d.setDate(today.getDate() + i);
-            
-            // 時差ボケを防ぐため、手動で YYYY-MM-DD を作る
-            const year = d.getFullYear();
-            const month = (d.getMonth() + 1).toString().padStart(2, '0');
-            const day = d.getDate().toString().padStart(2, '0');
-            const dateStr = `${year}-${month}-${day}`;
-            
-            const dayStr = ['日','月','火','水','木','金','土'][d.getDay()];
-            const dayClass = d.getDay() === 0 ? 'day-sun' : (d.getDay() === 6 ? 'day-sat' : '');
-            
-            const row = document.createElement('div');
-            row.className = 'ws-row';
-            row.innerHTML = `
-                <div class="ws-date ${dayClass}">${dateStr} (${dayStr})</div>
-                <div class="ws-inputs">
-                    <select class="ws-start" data-date="${dateStr}">${timeOptions}</select> ～ 
-                    <select class="ws-end" data-date="${dateStr}">${timeOptions}</select>
-                </div>
-            `;
-            container.appendChild(row);
-        }
-    },
-
-    loadCastWeeklyData: async function(castId) {
-        if(!castId) { this.renderWeeklyHeader(); return; }
-        const container = document.getElementById('ws-container');
-        container.innerHTML = '<div style="padding:20px;text-align:center;">データを読み込み中...</div>';
-        const res = await this.postData('get_weekly_availability', { cast_id: castId });
-        this.renderWeeklyHeader();
-        
-        const inputs = document.querySelectorAll('.ws-start');
-        inputs.forEach(inp => {
-            const date = inp.dataset.date;
-            const target = res.data.find(d => d.date === date);
-            const row = inp.closest('.ws-row');
-            const endInp = row.querySelector('.ws-end');
-            
-            if(target && target.shift) {
-                // 保存されているデータが「00:02」などでも、プルダウンに無ければ空になる
-                // 近い時間に合わせる処理を入れるとなお親切だが、今回は再入力してもらう
-                inp.value = target.shift.start || '';
-                endInp.value = target.shift.end || '';
-            }
-        });
-    },
-
-    saveWeeklyShift: async function() {
-        const castId = document.getElementById('ws-cast').value;
-        if(!castId) { alert('キャストを選択してください'); return; }
-        const shifts = [];
-        const rows = document.querySelectorAll('.ws-row');
-        rows.forEach(r => {
-            const start = r.querySelector('.ws-start').value;
-            const end = r.querySelector('.ws-end').value;
-            const date = r.querySelector('.ws-start').dataset.date;
-            shifts.push({ date: date, start: start, end: end });
-        });
-        await this.postData('save_weekly_shift', { cast_id: castId, shifts: shifts });
-        alert('週間シフトを保存しました！');
-    },
-
-    // 既存のbindEventsに追加
     bindEvents: function() {
-                if(document.getElementById('ws-cast')) document.getElementById('ws-cast').addEventListener('change', (e) => this.loadCastWeeklyData(e.target.value));
-        if(document.getElementById('btn-save-weekly')) document.getElementById('btn-save-weekly').addEventListener('click', () => this.saveWeeklyShift());
+        // ログイン
         if(document.getElementById('btn-login')) document.getElementById('btn-login').addEventListener('click', () => this.login());
-        if(document.getElementById('btn-save-cast')) document.getElementById('btn-save-cast').addEventListener('click', () => this.saveCast());
+        
+        // キャスト管理
         if(document.getElementById('btn-new-cast')) document.getElementById('btn-new-cast').addEventListener('click', () => this.openModal());
+        if(document.getElementById('btn-save-cast')) document.getElementById('btn-save-cast').addEventListener('click', () => this.saveCast());
         if(document.getElementById('btn-close-modal')) document.getElementById('btn-close-modal').addEventListener('click', () => this.closeModal());
-        if(document.getElementById('schedule-date')) document.getElementById('schedule-date').addEventListener('change', () => this.loadSchedule());
-        if(document.getElementById('btn-save-schedule')) document.getElementById('btn-save-schedule').addEventListener('click', () => this.saveSchedule());
+        
+        // 週間シフト (キャスト選択時)
+        const wsCast = document.getElementById('ws-cast');
+        if(wsCast) wsCast.addEventListener('change', (e) => this.loadCastWeeklyData(e.target.value));
+        if(document.getElementById('btn-save-weekly')) document.getElementById('btn-save-weekly').addEventListener('click', () => this.saveWeeklyShift());
+
+        // メニュー管理 (★ここが消えていたので復活！)
         if(document.getElementById('btn-new-menu')) document.getElementById('btn-new-menu').addEventListener('click', () => this.openMenuModal());
         if(document.getElementById('btn-save-menu')) document.getElementById('btn-save-menu').addEventListener('click', () => this.saveMenu());
         if(document.getElementById('btn-close-menu-modal')) document.getElementById('btn-close-menu-modal').addEventListener('click', () => this.closeMenuModal());
     },
+
     checkAuth: function() {
         const token = localStorage.getItem('auth_token');
         const overlay = document.getElementById('login-overlay');
@@ -139,6 +31,7 @@
             if(overlay) overlay.classList.remove('hidden');
         }
     },
+
     postData: async function(act, pl = {}) {
         const url = CONFIG.API_URL;
         const body = { action: act, token: localStorage.getItem('auth_token'), ...pl };
@@ -149,6 +42,7 @@
             return json;
         } catch (e) { console.error(e); alert('通信エラー: ' + e); throw e; }
     },
+
     login: async function() {
         const id = document.getElementById('inp-shop-id').value;
         const pw = document.getElementById('inp-password').value;
@@ -161,14 +55,15 @@
             location.reload();
         }
     },
-    // Casts
+
+    // --- キャスト管理 ---
     loadCasts: async function() {
         const res = await this.postData('get_casts');
         const list = document.getElementById('cast-list');
         list.innerHTML = '';
         res.data.forEach(c => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${c.name}</td><td>${c.age}</td><td>${c.is_active?'在籍':'退店'}</td><td><button onclick="UI.editCast('${c.id}')">編集</button></td>`;
+            tr.innerHTML = `<td><div style="font-weight:bold;">${c.name}</div><div style="font-size:12px;color:#888;">ID: ${c.id}</div></td><td>${c.age}歳</td><td>${c.is_active?'<span style="color:#2563eb;font-weight:bold;">在籍</span>':'<span style="color:#94a3b8;">退店</span>'}</td><td><button class="btn-primary btn-sm" onclick="UI.editCast('${c.id}')">編集</button></td>`;
             tr.dataset.json = JSON.stringify(c);
             list.appendChild(tr);
         });
@@ -210,46 +105,91 @@
         this.closeModal();
         this.loadCasts();
     },
-    // Schedule
-    loadSchedule: async function() {
-        const date = document.getElementById('schedule-date').value;
-        if(!date) return;
-        const list = document.getElementById('schedule-list');
-        list.innerHTML = '<tr><td colspan="4">読み込み中...</td></tr>';
-        const res = await this.postData('get_schedule', { date: date });
-        list.innerHTML = '';
-        if(res.data.length === 0) { list.innerHTML = '<tr><td colspan="4">キャストがいません。</td></tr>'; return; }
-        res.data.forEach(s => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${s.name}</td><td><input type="time" class="inp-start" data-id="${s.cast_id}" value="${s.start_time}"> ～ <input type="time" class="inp-end" data-id="${s.cast_id}" value="${s.end_time}"></td><td><label><input type="checkbox" class="inp-immediate" data-id="${s.cast_id}" ${s.is_immediate ? 'checked' : ''}> 今すぐOK</label></td><td>-</td>`;
-            list.appendChild(tr);
+
+    // --- 週間シフト管理 (30分単位プルダウン) ---
+    generateTimeOptions: function() {
+        let options = '<option value="">-- 休 --</option>';
+        const startHour = 12; const totalHours = 24; 
+        for(let i=0; i<totalHours * 2; i++) {
+            const totalMin = (startHour * 60) + (i * 30);
+            let h = Math.floor(totalMin / 60);
+            const m = totalMin % 60;
+            let hDisp = h % 24;
+            const val = `${hDisp.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+            options += `<option value="${val}">${val}</option>`;
+        }
+        return options;
+    },
+    loadWeeklyShiftEditor: async function() {
+        const res = await this.postData('get_casts');
+        const sel = document.getElementById('ws-cast');
+        if(!sel) return;
+        sel.innerHTML = '<option value="">▼ キャストを選択してください</option>';
+        res.data.forEach(c => { const opt = document.createElement('option'); opt.value = c.id; opt.textContent = c.name; sel.appendChild(opt); });
+        this.renderWeeklyHeader();
+    },
+    renderWeeklyHeader: function() {
+        const today = new Date();
+        const container = document.getElementById('ws-container');
+        if(!container) return;
+        container.innerHTML = '';
+        const timeOptions = this.generateTimeOptions();
+        for(let i=0; i<7; i++) {
+            const d = new Date(); d.setDate(today.getDate() + i);
+            const year = d.getFullYear(); const month = (d.getMonth()+1).toString().padStart(2,'0'); const day = d.getDate().toString().padStart(2,'0');
+            const dateStr = `${year}-${month}-${day}`;
+            const dayStr = ['日','月','火','水','木','金','土'][d.getDay()];
+            const dayClass = d.getDay()===0 ? 'day-sun' : (d.getDay()===6 ? 'day-sat' : '');
+            
+            const row = document.createElement('div');
+            row.className = 'ws-row';
+            row.innerHTML = `<div class="ws-date ${dayClass}">${dateStr} (${dayStr})</div><div class="ws-inputs"><select class="ws-start" data-date="${dateStr}">${timeOptions}</select> ～ <select class="ws-end" data-date="${dateStr}">${timeOptions}</select></div>`;
+            container.appendChild(row);
+        }
+    },
+    loadCastWeeklyData: async function(castId) {
+        if(!castId) { this.renderWeeklyHeader(); return; }
+        const container = document.getElementById('ws-container');
+        container.innerHTML = '<div style="padding:40px;text-align:center;color:#64748b;">データを読み込んでいます...</div>';
+        const res = await this.postData('get_weekly_availability', { cast_id: castId });
+        this.renderWeeklyHeader();
+        const inputs = document.querySelectorAll('.ws-start');
+        inputs.forEach(inp => {
+            const date = inp.dataset.date;
+            const target = res.data.find(d => d.date === date);
+            const row = inp.closest('.ws-row');
+            const endInp = row.querySelector('.ws-end');
+            if(target && target.shift) { inp.value = target.shift.start || ''; endInp.value = target.shift.end || ''; }
         });
     },
-    saveSchedule: async function() {
-        const date = document.getElementById('schedule-date').value;
-        const rows = document.querySelectorAll('#schedule-list tr');
-        const schedules = [];
-        rows.forEach(tr => {
-            const startInp = tr.querySelector('.inp-start');
-            if(!startInp) return;
-            schedules.push({
-                cast_id: startInp.dataset.id,
-                start_time: startInp.value,
-                end_time: tr.querySelector('.inp-end').value,
-                is_immediate: tr.querySelector('.inp-immediate').checked
-            });
+    saveWeeklyShift: async function() {
+        const castId = document.getElementById('ws-cast').value;
+        if(!castId) { alert('キャストを選択してください'); return; }
+        const shifts = [];
+        const rows = document.querySelectorAll('.ws-row');
+        rows.forEach(r => {
+            const start = r.querySelector('.ws-start').value;
+            const end = r.querySelector('.ws-end').value;
+            const date = r.querySelector('.ws-start').dataset.date;
+            shifts.push({ date: date, start: start, end: end });
         });
-        await this.postData('save_schedule', { date: date, schedules: schedules });
-        alert('シフトを保存しました！');
+        await this.postData('save_weekly_shift', { cast_id: castId, shifts: shifts });
+        alert('週間シフトを保存しました！');
     },
-    // Menu
+
+    // --- メニュー管理 (★ここが復活！) ---
     loadMenu: async function() {
         const res = await this.postData('get_menu');
         const list = document.getElementById('menu-list');
         list.innerHTML = '';
         res.data.forEach(m => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${m.type==='course'?'コース':'OP'}</td><td>${m.name}</td><td>${m.price}円</td><td>${m.minutes}分</td><td>${m.cast_name}</td><td><button onclick="UI.editMenu('${m.id}')">編集</button></td>`;
+            tr.innerHTML = `<td>${m.type==='course'?'<span style="background:#e0e7ff;color:#3730a3;padding:4px 8px;border-radius:4px;font-size:12px;">コース</span>':'<span style="background:#f1f5f9;color:#475569;padding:4px 8px;border-radius:4px;font-size:12px;">OP</span>'}</td>
+                            <td>${m.name}</td>
+                            <td>${parseInt(m.price).toLocaleString()}円</td>
+                            <td>${m.minutes}分</td>
+                            <td>${m.cast_name||'全員'}</td>
+                            <td><button class="btn-primary btn-sm" onclick="UI.editMenu('${m.id}')">編集</button></td>`;
             tr.dataset.json = JSON.stringify(m);
             list.appendChild(tr);
         });
@@ -288,18 +228,31 @@
         this.closeMenuModal();
         this.loadMenu();
     },
-    // Reservations
+
+    // --- 予約管理 ---
     loadReservations: async function() {
         const res = await this.postData('get_reservations');
         const list = document.getElementById('res-list');
         list.innerHTML = '';
         res.data.forEach(r => {
-            let statusBadge = '';
-            if(r.status === 'pending') statusBadge = '<span style="background:#ffc107; padding:3px 8px; border-radius:10px;">未確定</span>';
-            else if(r.status === 'confirmed') statusBadge = '<span style="background:#28a745; color:white; padding:3px 8px; border-radius:10px;">確定済</span>';
-            else if(r.status === 'canceled') statusBadge = '<span style="background:#dc3545; color:white; padding:3px 8px; border-radius:10px;">キャンセル</span>';
+            let badge = '';
+            if(r.status === 'pending') badge = '<span style="background:#fef3c7;color:#b45309;padding:4px 8px;border-radius:10px;font-size:12px;font-weight:bold;">未確定</span>';
+            else if(r.status === 'confirmed') badge = '<span style="background:#dcfce7;color:#15803d;padding:4px 8px;border-radius:10px;font-size:12px;font-weight:bold;">確定済</span>';
+            else if(r.status === 'canceled') badge = '<span style="background:#fee2e2;color:#b91c1c;padding:4px 8px;border-radius:10px;font-size:12px;font-weight:bold;">キャンセル</span>';
+
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${r.date.split('T')[0]} ${r.time}</td><td>${r.cast_name}</td><td>${r.customer_name}</td><td>${r.course_name}</td><td>${statusBadge}</td><td>${r.status === 'pending' ? `<button onclick="UI.updateRes('${r.id}', 'confirmed')" style="background:#28a745; color:white;">確定</button>` : ''}${r.status !== 'canceled' ? `<button onclick="UI.updateRes('${r.id}', 'canceled')" style="background:#dc3545; color:white;">却下</button>` : ''}</td>`;
+            tr.innerHTML = `
+                <td><div style="font-weight:bold;">${r.date.split('T')[0]} ${r.time}</div></td>
+                <td>${r.cast_name}</td>
+                <td><div style="font-weight:bold;">${r.customer_name}</div></td>
+                <td>${r.customer_tel||'-'}</td>
+                <td>${r.course_name}</td>
+                <td>${badge}</td>
+                <td>
+                    ${r.status === 'pending' ? `<button onclick="UI.updateRes('${r.id}', 'confirmed')" class="btn-primary btn-sm" style="background:#16a34a;">確定</button>` : ''}
+                    ${r.status !== 'canceled' ? `<button onclick="UI.updateRes('${r.id}', 'canceled')" class="btn-primary btn-sm btn-danger" style="margin-left:5px;">却下</button>` : ''}
+                </td>
+            `;
             list.appendChild(tr);
         });
     },
@@ -310,16 +263,3 @@
         this.loadReservations();
     }
 };
-document.addEventListener('DOMContentLoaded', () => {
-    UI.init();
-    if(document.getElementById('cast-list')) UI.loadCasts();
-    if(document.getElementById('schedule-list')) { const t = new Date().toISOString().split('T')[0]; document.getElementById('schedule-date').value = t; UI.loadSchedule(); }
-    if(document.getElementById('menu-list')) UI.loadMenu();
-    if(document.getElementById('res-list')) UI.loadReservations();
-});
-
-
-
-
-
-

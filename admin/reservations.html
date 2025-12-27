@@ -1,13 +1,15 @@
-﻿<!DOCTYPE html><html lang='ja'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>予約一覧</title><link rel='stylesheet' href='../common/ui.css'></head><body>
-<div id='app-container'>
-<nav id='sidebar'><h2><span id='shop-name-display'>店舗</span> 管理</h2>
-<a href='index.html' class='menu-item '>ダッシュボード</a>
-<a href='casts.html' class='menu-item '>キャスト管理</a>
-<a href='schedule.html' class='menu-item '>出勤管理(日別)</a>
-<a href='weekly_shift.html' class='menu-item '>週間シフト入力</a>
-<a href='menu.html' class='menu-item '>メニュー管理</a>
-<a href='reservations.html' class='menu-item active'>予約一覧</a>
-<a class='menu-item' onclick='localStorage.clear(); location.reload();'>ログアウト</a></nav>
-<main id='main-content'><div class='card'><h3>予約一覧</h3><p>※「未確定」の予約を確認し、確定処理を行ってください。</p>
-<table><thead><tr><th>日時</th><th>指名</th><th>お客様名</th><th>電話番号</th><th>コース</th><th>状態</th><th>操作</th></tr></thead><tbody id='res-list'></tbody></table></div></main></div>
-<script src='../common/config.js'></script><script src='../common/ui.js'></script></body></html>
+﻿<!DOCTYPE html><html lang='ja'><head><meta charset='UTF-8'><title>予約一覧</title><link rel='stylesheet' href='../common/ui.css'></head><body>
+<div id='app-container'><nav id='sidebar'>
+    <h2><span>DEMO</span> SHOP</h2>
+    <a href='index.html' class='menu-item '>ホーム / ダッシュボード</a>
+    <a href='casts.html' class='menu-item '>キャスト管理</a>
+    <a href='schedule.html' class='menu-item '>出勤シフト管理</a>
+    <a href='menu.html' class='menu-item '>メニュー・料金管理</a>
+    <a href='reservations.html' class='menu-item active'>予約リスト</a>
+    <div style="margin-top:auto; border-top:1px solid #334155;">
+        <a class='menu-item' onclick='localStorage.clear(); location.reload();'>ログアウト</a>
+    </div>
+</nav>
+<main id='main-content'><div class='card'><h3>予約リクエスト一覧</h3><p style='color:#64748b; margin-bottom:20px;'>※ お客様からの予約を確認し、確定または却下を行ってください。</p>
+<table><thead><tr><th>希望日時</th><th>指名キャスト</th><th>お客様名</th><th>TEL</th><th>コース</th><th>ステータス</th><th>操作</th></tr></thead><tbody id='res-list'></tbody></table></div></main></div>
+<script src='../common/config.js'></script><script src='../common/ui.js'></script><script>document.addEventListener('DOMContentLoaded', ()=>{UI.init(); UI.loadReservations();});</script></body></html>
