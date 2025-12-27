@@ -1,22 +1,10 @@
-﻿<!DOCTYPE html>
-<html lang='ja'>
-<head>
-<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>
-<title>管理画面</title>
-<link rel='stylesheet' href='../common/ui.css'>
-</head>
-<body>
-<div id='login-overlay'><div class='login-box'><h2>管理ログイン</h2>
-<input type='text' id='inp-shop-id' placeholder='ID'><input type='password' id='inp-password' placeholder='PW'>
-<button id='btn-login' class='btn-primary'>ログイン</button></div></div>
-<div id='app-container'>
-<nav id='sidebar'><h2><span id='shop-name-display'>店舗</span> 管理</h2>
+﻿<!DOCTYPE html><html lang='ja'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>管理画面</title><link rel='stylesheet' href='../common/ui.css'></head><body>
+<div id='login-overlay'><div class='login-box'><h2>管理ログイン</h2><input type='text' id='inp-shop-id' placeholder='ID'><input type='password' id='inp-password' placeholder='PW'><button id='btn-login' class='btn-primary'>ログイン</button></div></div>
+<div id='app-container'><nav id='sidebar'><h2><span id='shop-name-display'>店舗</span> 管理</h2>
 <a href='index.html' class='menu-item active'>ダッシュボード</a>
-<a href='casts.html' class='menu-item'>キャスト管理</a>
-<a class='menu-item'>出勤管理</a><a class='menu-item'>予約一覧</a>
-<a class='menu-item' onclick='localStorage.clear(); location.reload();'>ログアウト</a></nav>
-<main id='main-content'><div class='card'><h3>お知らせ</h3><p>システム構築中</p></div></main>
-</div>
-<script src='../common/config.js'></script><script src='../common/ui.js'></script>
-</body>
-</html>
+<a href='casts.html' class='menu-item '>キャスト管理</a>
+<a href='schedule.html' class='menu-item '>出勤管理</a>
+<a href='menu.html' class='menu-item '>メニュー管理</a>
+<a href='reservations.html' class='menu-item '>予約一覧</a>
+<a class='menu-item' onclick='localStorage.clear(); location.reload();'>ログアウト</a></nav><main id='main-content'><div class='card'><h3>お知らせ</h3><p>システム稼働中</p></div></main></div>
+<script src='../common/config.js'></script><script src='../common/ui.js'></script></body></html>

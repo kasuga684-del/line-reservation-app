@@ -1,43 +1,12 @@
-﻿<!DOCTYPE html>
-<html lang='ja'>
-<head>
-<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>
-<title>出勤管理</title>
-<link rel='stylesheet' href='../common/ui.css'>
-<style>
-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-th, td { border: 1px solid #ddd; padding: 12px; text-align: left; vertical-align: middle; }
-th { background-color: #f2f2f2; }
-input[type='time'] { padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
-</style>
-</head>
-<body>
-<div id='app-container'>
-<nav id='sidebar'><h2><span id='shop-name-display'>店舗</span> 管理</h2>
-<a href='index.html' class='menu-item'>ダッシュボード</a>
-<a href='casts.html' class='menu-item'>キャスト管理</a>
+﻿<!DOCTYPE html><html lang='ja'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>出勤管理</title><link rel='stylesheet' href='../common/ui.css'></head><body>
+<div id='app-container'><nav id='sidebar'><h2><span id='shop-name-display'>店舗</span> 管理</h2>
+<a href='index.html' class='menu-item '>ダッシュボード</a>
+<a href='casts.html' class='menu-item '>キャスト管理</a>
 <a href='schedule.html' class='menu-item active'>出勤管理</a>
-<a class='menu-item'>予約一覧</a>
-</nav>
-
-<main id='main-content'>
-    <div class='card'>
-        <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;'>
-            <h3>出勤管理</h3>
-            <input type='date' id='schedule-date' style='padding:8px; font-size:16px;'>
-        </div>
-        
-        <table>
-            <thead><tr><th style='width:20%;'>名前</th><th style='width:40%;'>時間</th><th style='width:20%;'>状態</th><th style='width:20%;'>備考</th></tr></thead>
-            <tbody id='schedule-list'></tbody>
-        </table>
-
-        <div style='margin-top:20px; text-align:right;'>
-            <button id='btn-save-schedule' class='btn-primary' style='width:200px;'>変更を保存する</button>
-        </div>
-    </div>
-</main>
-</div>
-<script src='../common/config.js'></script><script src='../common/ui.js'></script>
-</body>
-</html>
+<a href='menu.html' class='menu-item '>メニュー管理</a>
+<a href='reservations.html' class='menu-item '>予約一覧</a>
+<a class='menu-item' onclick='localStorage.clear(); location.reload();'>ログアウト</a></nav>
+<main id='main-content'><div class='card'><div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;'><h3>出勤管理</h3><input type='date' id='schedule-date' style='padding:8px; font-size:16px;'></div>
+<table><thead><tr><th style='width:20%;'>名前</th><th style='width:40%;'>時間</th><th style='width:20%;'>状態</th><th style='width:20%;'>備考</th></tr></thead><tbody id='schedule-list'></tbody></table>
+<div style='margin-top:20px; text-align:right;'><button id='btn-save-schedule' class='btn-primary' style='width:200px;'>変更を保存する</button></div></div></main></div>
+<script src='../common/config.js'></script><script src='../common/ui.js'></script></body></html>
