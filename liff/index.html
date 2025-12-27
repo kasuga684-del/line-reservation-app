@@ -9,62 +9,79 @@
     #app-container { display: block !important; max-width: 480px; margin: 0 auto; background: #fff; min-height: 100vh; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
     header { background: linear-gradient(to right, #ff69b4, #ffb6c1); color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; letter-spacing: 1px; }
     .hidden { display: none !important; }
-    .container { padding: 15px; }
+    
+    /* 一覧 */
     #cast-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }
     .cast-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.1s; }
-    .cast-card:active { transform: scale(0.98); }
     .cast-img-wrapper { position: relative; padding-top: 133%; }
     .cast-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; background-color: #eee; }
     .cast-info { padding: 10px; text-align: center; }
     .cast-info h3 { margin: 0; color: #ff1493; font-size: 16px; }
-    .cast-info h3 small { font-size: 12px; color: #666; font-weight: normal; }
-    .cast-info .meta { font-size: 11px; color: #888; margin: 5px 0 0; }
+
+    /* 詳細 & マトリクス */
     .detail-header { position: relative; }
-    #detail-img { width: 100%; padding-top: 125%; background-size: cover; background-position: top center; background-color: #eee; }
-    .detail-prof { padding: 20px 15px; background: #fff; border-radius: 20px 20px 0 0; margin-top: -20px; position: relative; }
-    .detail-prof h2 { margin: 0; color: #ff1493; font-size: 22px; display: flex; align-items: baseline; gap: 8px; }
-    .detail-prof h2 small { font-size: 14px; color: #666; }
-    .detail-meta { color: #666; font-size: 13px; margin-top: 5px; }
-    .detail-intro-box { margin-top: 20px; background: #fff5f8; padding: 15px; border-radius: 8px; line-height: 1.6; font-size: 14px; color: #444; }
-    .form-header { text-align: center; margin-bottom: 25px; }
-    .form-header h3 { margin: 5px 0; color: #ff1493; font-size: 20px; }
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #555; font-size: 14px; }
-    .form-group label span.req { color: #ff1493; font-size: 11px; margin-left: 5px; }
-    .form-group input, .form-group select { width: 100%; padding: 14px; font-size: 16px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; background: #fcfcfc; -webkit-appearance: none; }
-    .fixed-bottom-btn { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; padding: 15px; background: #fff; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); box-sizing: border-box; }
-    .btn-main { display: block; width: 100%; padding: 16px; font-size: 18px; font-weight: bold; text-align: center; color: white; border: none; border-radius: 50px; cursor: pointer; background: linear-gradient(to right, #ff1493, #ff69b4); box-shadow: 0 4px 15px rgba(255, 20, 147, 0.3); }
-    .btn-back { background: transparent; border: 2px solid #ccc; color: #666; margin-top: 15px; box-shadow: none; }
-    #view-detail, #view-form { padding-bottom: 90px; }
+    #detail-img { width: 100%; padding-top: 100%; background-size: cover; background-position: top center; background-color: #eee; }
+    .detail-prof { padding: 15px; background: #fff; }
+    .detail-prof h2 { color: #ff1493; font-size: 20px; }
+    .detail-intro-box { background: #fff5f8; padding: 10px; border-radius: 8px; font-size: 13px; margin-top: 10px; }
+
+    /* ★予約マトリクス★ */
+    .sch-wrapper { overflow-x: auto; padding: 10px; }
+    .sch-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: center; table-layout: fixed; }
+    .sch-table th { background: #f8f8f8; padding: 5px; border: 1px solid #eee; font-weight: bold; }
+    .sch-table td { padding: 8px; border: 1px solid #eee; height: 30px; vertical-align: middle; }
+    .col-sat { color: blue; background: #eef; }
+    .col-sun { color: red; background: #fee; }
+    .time-label { background: #fafafa; font-weight: bold; width: 50px; }
+    .cell-ng { color: #ccc; font-size: 16px; }
+    .cell-ok { color: #ff1493; font-weight: bold; font-size: 18px; cursor: pointer; background: #fff0f5; }
+    .cell-ok:active { background: #ff69b4; color: white; }
+
+    /* フォーム */
+    .container { padding: 15px; }
+    .form-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
+    .form-group input, .form-group select { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 6px; }
+    
+    .btn-main { display: block; width: 100%; padding: 15px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 50px; cursor: pointer; background: linear-gradient(to right, #ff1493, #ff69b4); box-shadow: 0 4px 10px rgba(255, 20, 147, 0.3); margin-top: 20px; }
+    .btn-back { background: #fff; color: #666; border: 1px solid #ccc; margin-top: 10px; box-shadow: none; }
 </style>
 </head>
 <body>
 <div id='app-container'>
-    <header>キャスト一覧</header>
-    <div id='view-list'><div id='cast-grid'><div style='padding:30px; text-align:center; color:#999;'>読み込み中...</div></div></div>
+    <header>LINE予約アプリ</header>
+    
+    <div id='view-list'>
+        <div id='cast-grid'><div style='padding:30px; text-align:center; color:#999;'>読み込み中...</div></div>
+    </div>
+
     <div id='view-detail' class='hidden'>
         <div class='detail-header'><div id='detail-img'></div></div>
         <div class='detail-prof'>
             <h2><span id='detail-name'></span><small id='detail-age'></small></h2>
-            <p class='detail-meta' id='detail-meta'></p>
-            <div class='detail-intro-box' id='detail-intro'></div>
+            <div id='detail-intro' class='detail-intro-box'></div>
+            
+            <h3 style='margin-top:20px; border-bottom:2px solid #ff69b4; display:inline-block;'>スケジュール</h3>
+            <div class='sch-wrapper' id='schedule-matrix'></div>
         </div>
-        <div class='fixed-bottom-btn'>
-            <button class='btn-main' onclick='LIFF_App.showBookingForm()'>WEB予約する</button>
+        <div style='padding:15px;'>
             <button class='btn-main btn-back' onclick='LIFF_App.switchView("view-list")'>一覧に戻る</button>
         </div>
     </div>
+
     <div id='view-form' class='hidden'>
         <div class='container'>
-            <div class='form-header'><p>ご予約キャスト</p><h3 id='target-cast-name'></h3></div>
-            <div class='form-group'><label>日時<span class='req'>必須</span></label><div style='display:flex; gap:10px;'><input type='date' id='res-date' style='flex:3;'><input type='time' id='res-time' style='flex:2;'></div></div>
-            <div class='form-group'><label>コース<span class='req'>必須</span></label><select id='res-course'><option>読み込み中...</option></select></div>
-            <div class='form-group'><label>お名前 (フルネーム 漢字)<span class='req'>必須</span></label><input type='text' id='res-name' placeholder='例：山田 太郎'></div>
-            <div class='form-group'><label>お電話番号<span class='req'>必須</span></label><input type='tel' id='res-tel' placeholder='例：09012345678'></div>
-        </div>
-        <div class='fixed-bottom-btn'>
-            <button id='btn-submit' class='btn-main' onclick='LIFF_App.submit()'>上記内容で予約する</button>
-            <button class='btn-main btn-back' onclick='LIFF_App.switchView("view-detail")'>詳細に戻る</button>
+            <div class='form-header'>
+                <p>ご予約日時</p>
+                <h2 id='confirm-datetime' style='color:#ff1493;'></h2>
+            </div>
+            <div class='form-group'><label>コース選択</label><select id='res-course'><option>読み込み中...</option></select></div>
+            <div class='form-group'><label>お名前 (フルネーム)</label><input type='text' id='res-name' placeholder='山田 太郎'></div>
+            <div class='form-group'><label>お電話番号</label><input type='tel' id='res-tel' placeholder='09012345678'></div>
+            
+            <button id='btn-submit' class='btn-main' onclick='LIFF_App.submit()'>この内容で予約する</button>
+            <button class='btn-main btn-back' onclick='LIFF_App.switchView("view-detail")'>日時を選び直す</button>
         </div>
     </div>
 </div>

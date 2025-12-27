@@ -2,6 +2,13 @@
     shopId: 'demo',
     selectedCastId: null,
     castsData: [],
+    
+    // 予約一時データ
+    bookingData: {
+        date: null,
+        time: null,
+        courseId: null
+    },
 
     init: async function() {
         const params = new URLSearchParams(window.location.search);
@@ -39,7 +46,7 @@
         });
     },
 
-    showCastDetail: function(castId) {
+    showCastDetail: async function(castId) {
         const cast = this.castsData.find(c => c.id === castId);
         if(!cast) return;
         this.selectedCastId = castId;
@@ -49,16 +56,94 @@
         document.getElementById('detail-age').textContent = `(${cast.age}歳)`;
         document.getElementById('detail-meta').textContent = `T${cast.height}cm / BWH: ${cast.sizes}`;
         document.getElementById('detail-intro').innerHTML = cast.introduction ? cast.introduction.replace(/\n/g, '<br>') : 'よろしくお願いします！';
+        
+        // スケジュール表の生成（APIから取得）
+        document.getElementById('schedule-matrix').innerHTML = '<div style="padding:20px;text-align:center;">スケジュール確認中...</div>';
         this.switchView('view-detail');
         window.scrollTo(0, 0);
+        
+        await this.loadWeeklySchedule(castId);
     },
 
-    showBookingForm: function() {
-        const cast = this.castsData.find(c => c.id === this.selectedCastId);
-        document.getElementById('target-cast-name').textContent = cast ? cast.name : '';
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('res-date').value = today;
+    loadWeeklySchedule: async function(castId) {
+        const res = await this.postData('get_weekly_availability', { cast_id: castId });
+        const matrix = document.getElementById('schedule-matrix');
+        matrix.innerHTML = '';
+
+        // テーブルヘッダー (日付)
+        let html = '<table class="sch-table"><thead><tr><th>時間</th>';
+        res.data.forEach(d => {
+            const dateObj = new Date(d.date);
+            const dayStr = ['日','月','火','水','木','金','土'][dateObj.getDay()];
+            const mmdd = (dateObj.getMonth()+1) + '/' + dateObj.getDate();
+            const isSat = dateObj.getDay() === 6;
+            const isSun = dateObj.getDay() === 0;
+            const colorClass = isSun ? 'col-sun' : (isSat ? 'col-sat' : '');
+            html += `<th class="${colorClass}">${mmdd}<br>${dayStr}</th>`;
+        });
+        html += '</tr></thead><tbody>';
+
+        // タイムスロット (12:00 ～ 29:00 まで30分刻み)
+        const startHour = 12;
+        const endHour = 29; // 翌朝5時
+        
+        for (let h = startHour; h < endHour; h++) {
+            for (let min = 0; min < 60; min += 30) {
+                const hourDisplay = h % 24;
+                const timeStr = `${hourDisplay.toString().padStart(2,'0')}:${min.toString().padStart(2,'0')}`;
+                // 比較用数値 (例: 1200, 2430)
+                const timeVal = h * 100 + min; 
+
+                html += `<tr><td class="time-label">${timeStr}</td>`;
+                
+                // 各日の判定
+                res.data.forEach(day => {
+                    // 1. シフトがあるか？
+                    let isShift = false;
+                    if (day.shift && day.shift.start && day.shift.end) {
+                        const sH = parseInt(day.shift.start.split(':')[0]);
+                        const sM = parseInt(day.shift.start.split(':')[1]);
+                        const eH = parseInt(day.shift.end.split(':')[0]);
+                        const eM = parseInt(day.shift.end.split(':')[1]);
+                        
+                        // 深夜対応（00:00以降は+24して計算）
+                        let startVal = sH * 100 + sM;
+                        let endVal = eH * 100 + eM;
+                        if(startVal < 1000) startVal += 2400; // お店が昼からなので朝の時間は翌日扱い
+                        if(endVal < startVal) endVal += 2400;
+
+                        if (timeVal >= startVal && timeVal < endVal) {
+                            isShift = true;
+                        }
+                    }
+
+                    // 2. 予約済みか？
+                    let isBooked = false;
+                    if(day.bookings.includes(timeStr)) {
+                        isBooked = true;
+                    }
+
+                    // 判定結果
+                    if (!isShift || isBooked) {
+                        html += '<td class="cell-ng">✕</td>';
+                    } else {
+                        // 予約可能 (クリックで予約へ)
+                        html += `<td class="cell-ok" onclick="LIFF_App.selectSlot('${day.date}', '${timeStr}')">〇</td>`;
+                    }
+                });
+                html += '</tr>';
+            }
+        }
+        html += '</tbody></table>';
+        matrix.innerHTML = html;
+    },
+
+    selectSlot: function(date, time) {
+        this.bookingData.date = date;
+        this.bookingData.time = time;
+        // コース選択へ進む
         this.switchView('view-form');
+        document.getElementById('confirm-datetime').textContent = `${date} ${time}～`;
         window.scrollTo(0, 0);
     },
 
@@ -84,16 +169,19 @@
     submit: async function() {
         const data = {
             cast_id: this.selectedCastId,
-            date: document.getElementById('res-date').value,
-            time: document.getElementById('res-time').value,
+            date: this.bookingData.date,
+            time: this.bookingData.time,
             course_id: document.getElementById('res-course').value,
             customer_name: document.getElementById('res-name').value,
             customer_tel: document.getElementById('res-tel').value,
             line_id: 'DUMMY_LINE_ID'
         };
-        if(!data.date || !data.time || !data.course_id || !data.customer_name || !data.customer_tel) { alert('すべての項目を入力してください。'); return; }
+
+        if(!data.course_id || !data.customer_name || !data.customer_tel) { alert('すべての項目を入力してください。'); return; }
+
         const btn = document.getElementById('btn-submit');
         btn.disabled = true; btn.textContent = '送信中...';
+
         const res = await this.postData('save_reservation', data);
         if(res.status === 'success') {
             alert('予約リクエストを送信しました！\nお店からの連絡をお待ちください。');
