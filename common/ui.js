@@ -1,5 +1,42 @@
 ﻿const UI = {
-    init: function() { this.checkAuth(); this.bindEvents(); this.initDropdowns(); },
+    init: function() { 
+        this.checkAuth(); 
+        this.initDropdowns(); // 先にプルダウンを作る
+        this.bindEvents(); 
+    },
+
+    // --- 初期化：プルダウンの選択肢を生成 ---
+    initDropdowns: function() {
+        const createOpt = (start, end, step = 1, suffix = '') => {
+            let opts = '';
+            for(let i=start; i<=end; i+=step) opts += `<option value="${i}">${i}${suffix}</option>`;
+            return opts;
+        };
+
+        // ▼ キャスト管理用 (年齢・身長・スリーサイズ)
+        if(document.getElementById('c-age')) {
+            document.getElementById('c-age').innerHTML = createOpt(18, 50, 1, '歳');
+            document.getElementById('c-height').innerHTML = createOpt(135, 175, 1, 'cm');
+            document.getElementById('c-bust').innerHTML = createOpt(70, 120, 1);
+            document.getElementById('c-waist').innerHTML = createOpt(50, 100, 1);
+            document.getElementById('c-hip').innerHTML = createOpt(70, 120, 1);
+            
+            const cups = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+            let cupOpts = ''; cups.forEach(c => cupOpts += `<option value="${c}">${c}カップ</option>`);
+            document.getElementById('c-cup').innerHTML = cupOpts;
+        }
+
+        // ▼ メニュー管理用 (コース料金・時間)
+        if(document.getElementById('m-price-course')) {
+            // 料金: 10000～40000 (2000円刻み)
+            document.getElementById('m-price-course').innerHTML = createOpt(10000, 40000, 2000, '円');
+            
+            // 時間: 60, 75, 90, 105, 120
+            let timeOpts = '';
+            [60, 75, 90, 105, 120].forEach(t => timeOpts += `<option value="${t}">${t}分</option>`);
+            document.getElementById('m-minutes-course').innerHTML = timeOpts;
+        }
+    },
 
     bindEvents: function() {
         if(document.getElementById('btn-login')) document.getElementById('btn-login').addEventListener('click', () => this.login());
@@ -19,38 +56,6 @@
         if(document.getElementById('btn-new-option')) document.getElementById('btn-new-option').addEventListener('click', () => this.openMenuModal('option'));
         if(document.getElementById('btn-save-menu')) document.getElementById('btn-save-menu').addEventListener('click', () => this.saveMenu());
         if(document.getElementById('btn-close-menu-modal')) document.getElementById('btn-close-menu-modal').addEventListener('click', () => this.closeMenuModal());
-    },
-
-    // --- 初期化：キャスト用プルダウン生成 ---
-    initDropdowns: function() {
-        const createOpt = (start, end, step = 1, suffix = '') => {
-            let opts = '';
-            for(let i=start; i<=end; i+=step) opts += `<option value="${i}">${i}${suffix}</option>`;
-            return opts;
-        };
-
-        // キャスト管理画面用
-        if(document.getElementById('c-age')) {
-            document.getElementById('c-age').innerHTML = createOpt(18, 50, 1, '歳');
-            document.getElementById('c-height').innerHTML = createOpt(135, 175, 1, 'cm');
-            document.getElementById('c-bust').innerHTML = createOpt(70, 120, 1);
-            document.getElementById('c-waist').innerHTML = createOpt(50, 100, 1);
-            document.getElementById('c-hip').innerHTML = createOpt(70, 120, 1);
-            
-            const cups = ['A','B','C','D','E','F','G','H','I','J','K','L'];
-            let cupOpts = ''; cups.forEach(c => cupOpts += `<option value="${c}">${c}カップ</option>`);
-            document.getElementById('c-cup').innerHTML = cupOpts;
-        }
-
-        // メニュー管理画面用 (コース用)
-        if(document.getElementById('m-price-course')) {
-            document.getElementById('m-price-course').innerHTML = createOpt(10000, 40000, 2000, '円');
-            
-            let timeOpts = '';
-            // 60, 75, 90 ... 120
-            [60, 75, 90, 105, 120].forEach(t => timeOpts += `<option value="${t}">${t}分</option>`);
-            document.getElementById('m-minutes-course').innerHTML = timeOpts;
-        }
     },
 
     checkAuth: function() {
@@ -95,7 +100,7 @@
         list.innerHTML = '';
         res.data.forEach(c => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><div style="font-weight:bold;">${c.name}</div><div style="font-size:12px;color:#888;">ID: ${c.id}</div></td><td>${c.age}歳</td><td>${c.is_active?'<span style="color:#2563eb;font-weight:bold;">在籍</span>':'<span style="color:#94a3b8;">退店</span>'}</td><td><button class="btn-primary btn-sm" onclick="UI.editCast('${c.id}')">編集</button></td>`;
+            tr.innerHTML = `<td><div style="font-weight:bold;">${c.name}</div></td><td>${c.age}歳</td><td>${c.is_active?'<span style="color:#2563eb;font-weight:bold;">在籍</span>':'<span style="color:#94a3b8;">退店</span>'}</td><td><button class="btn-primary btn-sm" onclick="UI.editCast('${c.id}')">編集</button></td>`;
             tr.dataset.json = JSON.stringify(c);
             list.appendChild(tr);
         });
@@ -111,10 +116,8 @@
             document.getElementById('c-intro').value = data.introduction || '';
             document.getElementById('c-active').value = data.is_active;
 
-            // スリーサイズ分解 (例: "B85(D)-W58-H88")
-            // 単純な数値保存の場合はそのまま、結合文字の場合は分解
+            // スリーサイズ分解
             const sizes = data.sizes || '';
-            // 正規表現で分解を試みる
             const match = sizes.match(/B(\d+)\(([A-Z])\)-W(\d+)-H(\d+)/);
             if(match) {
                 document.getElementById('c-bust').value = match[1];
@@ -123,15 +126,13 @@
                 document.getElementById('c-hip').value = match[4];
             } else {
                 // 初期値
-                document.getElementById('c-bust').value = 85;
-                document.getElementById('c-cup').value = 'D';
-                document.getElementById('c-waist').value = 58;
-                document.getElementById('c-hip').value = 88;
+                document.getElementById('c-bust').value = 85; document.getElementById('c-cup').value = 'D';
+                document.getElementById('c-waist').value = 58; document.getElementById('c-hip').value = 88;
             }
         } else {
             document.getElementById('form-cast').reset();
             document.getElementById('c-id').value = '';
-            // 初期値をセット
+            // 初期値
             document.getElementById('c-age').value = 20;
             document.getElementById('c-height').value = 160;
             document.getElementById('c-bust').value = 85;
@@ -146,7 +147,6 @@
         rows.forEach(r => { if(JSON.parse(r.dataset.json).id === id) this.openModal(JSON.parse(r.dataset.json)); });
     },
     saveCast: async function() {
-        // スリーサイズを結合
         const b = document.getElementById('c-bust').value;
         const cup = document.getElementById('c-cup').value;
         const w = document.getElementById('c-waist').value;
@@ -169,15 +169,13 @@
         this.loadCasts();
     },
 
-    // --- 週間シフト管理 (30分単位プルダウン) ---
+    // --- 週間シフト ---
     generateTimeOptions: function() {
         let options = '<option value="">-- 休 --</option>';
         const startHour = 12; const totalHours = 24; 
         for(let i=0; i<totalHours * 2; i++) {
             const totalMin = (startHour * 60) + (i * 30);
-            let h = Math.floor(totalMin / 60);
-            const m = totalMin % 60;
-            let hDisp = h % 24;
+            let h = Math.floor(totalMin / 60); const m = totalMin % 60; let hDisp = h % 24;
             const val = `${hDisp.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
             options += `<option value="${val}">${val}</option>`;
         }
@@ -203,7 +201,6 @@
             const dateStr = `${year}-${month}-${day}`;
             const dayStr = ['日','月','火','水','木','金','土'][d.getDay()];
             const dayClass = d.getDay()===0 ? 'day-sun' : (d.getDay()===6 ? 'day-sat' : '');
-            
             const row = document.createElement('div');
             row.className = 'ws-row';
             row.innerHTML = `<div class="ws-date ${dayClass}">${dateStr} (${dayStr})</div><div class="ws-inputs"><select class="ws-start" data-date="${dateStr}">${timeOptions}</select> ～ <select class="ws-end" data-date="${dateStr}">${timeOptions}</select></div>`;
@@ -213,7 +210,7 @@
     loadCastWeeklyData: async function(castId) {
         if(!castId) { this.renderWeeklyHeader(); return; }
         const container = document.getElementById('ws-container');
-        container.innerHTML = '<div style="padding:40px;text-align:center;color:#64748b;">データを読み込んでいます...</div>';
+        container.innerHTML = '<div style="padding:40px;text-align:center;">データを読み込んでいます...</div>';
         const res = await this.postData('get_weekly_availability', { cast_id: castId });
         this.renderWeeklyHeader();
         const inputs = document.querySelectorAll('.ws-start');
@@ -240,7 +237,7 @@
         alert('週間シフトを保存しました！');
     },
 
-    // --- メニュー管理 (コースとオプションを分離) ---
+    // --- メニュー管理 (コース/オプション分離) ---
     loadMenu: async function() {
         const res = await this.postData('get_menu');
         const courseList = document.getElementById('course-list');
@@ -252,12 +249,8 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `<td>${m.name}</td><td>${parseInt(m.price).toLocaleString()}円</td><td>${m.minutes ? m.minutes + '分' : '-'}</td><td>${m.cast_name||'全員'}</td><td><button class="btn-primary btn-sm" onclick="UI.editMenu('${m.id}')">編集</button></td>`;
             tr.dataset.json = JSON.stringify(m);
-
-            if(m.type === 'course') {
-                courseList.appendChild(tr);
-            } else {
-                optionList.appendChild(tr);
-            }
+            if(m.type === 'course') courseList.appendChild(tr);
+            else optionList.appendChild(tr);
         });
     },
     openMenuModal: function(type = 'course') {
@@ -266,21 +259,20 @@
         document.getElementById('m-id').value = '';
         document.getElementById('m-type').value = type;
 
-        // タイプに応じて入力欄を切り替え
         if(type === 'course') {
-            document.getElementById('modal-title').textContent = 'コース編集';
+            document.getElementById('modal-title').textContent = 'コースの作成';
             document.getElementById('input-area-course').classList.remove('hidden');
             document.getElementById('input-area-option').classList.add('hidden');
         } else {
-            document.getElementById('modal-title').textContent = 'オプション編集';
+            document.getElementById('modal-title').textContent = 'オプションの作成';
             document.getElementById('input-area-course').classList.add('hidden');
             document.getElementById('input-area-option').classList.remove('hidden');
         }
     },
     closeMenuModal: function() { document.getElementById('menu-modal').classList.add('hidden'); },
     editMenu: function(id) {
-        // 全リストから探す
-        const res = this.postData('get_menu').then(res => { // 簡易的に再取得して探す
+        // 再取得して検索
+        this.postData('get_menu').then(res => {
              const target = res.data.find(m => m.id === id);
              if(target) {
                  this.openMenuModal(target.type);
@@ -302,6 +294,8 @@
         const type = document.getElementById('m-type').value;
         const price = type === 'course' ? document.getElementById('m-price-course').value : document.getElementById('m-price-option').value;
         const minutes = type === 'course' ? document.getElementById('m-minutes-course').value : document.getElementById('m-minutes-option').value;
+
+        if(!price) { alert('料金を入力してください'); return; }
 
         const data = {
             id: document.getElementById('m-id').value,
@@ -330,18 +324,7 @@
             else if(r.status === 'canceled') badge = '<span style="background:#fee2e2;color:#b91c1c;padding:4px 8px;border-radius:10px;font-size:12px;font-weight:bold;">キャンセル</span>';
 
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><div style="font-weight:bold;">${r.date.split('T')[0]} ${r.time}</div></td>
-                <td>${r.cast_name}</td>
-                <td><div style="font-weight:bold;">${r.customer_name}</div></td>
-                <td>${r.customer_tel||'-'}</td>
-                <td>${r.course_name}</td>
-                <td>${badge}</td>
-                <td>
-                    ${r.status === 'pending' ? `<button onclick="UI.updateRes('${r.id}', 'confirmed')" class="btn-primary btn-sm" style="background:#16a34a;">確定</button>` : ''}
-                    ${r.status !== 'canceled' ? `<button onclick="UI.updateRes('${r.id}', 'canceled')" class="btn-primary btn-sm btn-danger" style="margin-left:5px;">却下</button>` : ''}
-                </td>
-            `;
+            tr.innerHTML = `<td><div style="font-weight:bold;">${r.date.split('T')[0]} ${r.time}</div></td><td>${r.cast_name}</td><td><div style="font-weight:bold;">${r.customer_name}</div></td><td>${r.customer_tel||'-'}</td><td>${r.course_name}</td><td>${badge}</td><td>${r.status === 'pending' ? `<button onclick="UI.updateRes('${r.id}', 'confirmed')" class="btn-primary btn-sm" style="background:#16a34a;">確定</button>` : ''}${r.status !== 'canceled' ? `<button onclick="UI.updateRes('${r.id}', 'canceled')" class="btn-primary btn-sm btn-danger" style="margin-left:5px;">却下</button>` : ''}</td>`;
             list.appendChild(tr);
         });
     },
