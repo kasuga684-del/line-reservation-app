@@ -1,20 +1,15 @@
 ﻿const LIFF_App = {
-    shopId: 'demo', // デモ用固定
-    
+    shopId: 'demo',
+    selectedCast: null,
+
     init: async function() {
-        // URLパラメータがあればshop_id上書き (?shop=xxx)
         const params = new URLSearchParams(window.location.search);
         if(params.has('shop')) this.shopId = params.get('shop');
         
-        // 日付初期値：今日
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('res-date').value = today;
-
         await this.loadCasts();
         await this.loadMenu();
     },
 
-    // API通信 (トークン不要・shop_id必須)
     postData: async function(act, pl = {}) {
         const url = CONFIG.API_URL;
         const body = { action: act, shop_id: this.shopId, ...pl };
@@ -26,13 +21,25 @@
 
     loadCasts: async function() {
         const res = await this.postData('get_casts');
-        const sel = document.getElementById('res-cast');
-        sel.innerHTML = '<option value="">(指名なし)</option>';
+        const container = document.getElementById('cast-grid');
+        container.innerHTML = '';
+
         res.data.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c.id;
-            opt.textContent = c.name + (c.age ? ` (${c.age})` : '');
-            sel.appendChild(opt);
+            const card = document.createElement('div');
+            card.className = 'cast-card';
+            // 画像がない場合はダミー
+            const imgUrl = c.image_url ? c.image_url : 'https://via.placeholder.com/150?text=No+Image';
+            
+            card.innerHTML = `
+                <div class="cast-img" style="background-image: url('${imgUrl}');"></div>
+                <div class="cast-info">
+                    <h3>${c.name} (${c.age}歳)</h3>
+                    <p class="meta">T${c.height} / ${c.sizes}</p>
+                    <p class="intro">${c.introduction ? c.introduction : 'よろしくお願いします！'}</p>
+                    <button class="btn-book" onclick="LIFF_App.showBookingForm('${c.id}', '${c.name}')">空き状況を見る</button>
+                </div>
+            `;
+            container.appendChild(card);
         });
     },
 
@@ -50,14 +57,39 @@
         });
     },
 
+    // 予約フォームを表示する
+    showBookingForm: function(castId, castName) {
+        this.selectedCast = castId;
+        
+        // 画面切り替え
+        document.getElementById('view-list').classList.add('hidden');
+        document.getElementById('view-form').classList.remove('hidden');
+        
+        // キャスト名セット
+        document.getElementById('target-cast-name').textContent = castName + ' への予約';
+        
+        // 日付初期値
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('res-date').value = today;
+        
+        // ページ上部へ
+        window.scrollTo(0, 0);
+    },
+
+    // 一覧に戻る
+    backToList: function() {
+        document.getElementById('view-form').classList.add('hidden');
+        document.getElementById('view-list').classList.remove('hidden');
+    },
+
     submit: async function() {
         const data = {
-            cast_id: document.getElementById('res-cast').value,
+            cast_id: this.selectedCast,
             date: document.getElementById('res-date').value,
             time: document.getElementById('res-time').value,
             course_id: document.getElementById('res-course').value,
             customer_name: document.getElementById('res-name').value,
-            line_id: 'DUMMY_LINE_ID' // 本番はLIFFから取得
+            line_id: 'DUMMY_LINE_ID'
         };
 
         if(!data.date || !data.time || !data.course_id || !data.customer_name) {

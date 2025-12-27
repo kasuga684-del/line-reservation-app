@@ -1,10 +1,7 @@
 ﻿const UI = {
     init: function() { this.checkAuth(); this.bindEvents(); },
-    
     bindEvents: function() {
         if(document.getElementById('btn-login')) document.getElementById('btn-login').addEventListener('click', () => this.login());
-        
-        // 各種イベント
         if(document.getElementById('btn-save-cast')) document.getElementById('btn-save-cast').addEventListener('click', () => this.saveCast());
         if(document.getElementById('btn-new-cast')) document.getElementById('btn-new-cast').addEventListener('click', () => this.openModal());
         if(document.getElementById('btn-close-modal')) document.getElementById('btn-close-modal').addEventListener('click', () => this.closeModal());
@@ -14,24 +11,16 @@
         if(document.getElementById('btn-save-menu')) document.getElementById('btn-save-menu').addEventListener('click', () => this.saveMenu());
         if(document.getElementById('btn-close-menu-modal')) document.getElementById('btn-close-menu-modal').addEventListener('click', () => this.closeMenuModal());
     },
-
     checkAuth: function() {
         const token = localStorage.getItem('auth_token');
         const overlay = document.getElementById('login-overlay');
-        
         if (token) {
-            // ★ログイン済みなら黒い画面を消す（ここが修正点！）
             if(overlay) overlay.classList.add('hidden');
-            
-            if(document.getElementById('shop-name-display')) {
-                document.getElementById('shop-name-display').textContent = localStorage.getItem('shop_name');
-            }
+            if(document.getElementById('shop-name-display')) document.getElementById('shop-name-display').textContent = localStorage.getItem('shop_name');
         } else {
-            // 未ログインなら表示
             if(overlay) overlay.classList.remove('hidden');
         }
     },
-
     postData: async function(act, pl = {}) {
         const url = CONFIG.API_URL;
         const body = { action: act, token: localStorage.getItem('auth_token'), ...pl };
@@ -42,7 +31,6 @@
             return json;
         } catch (e) { console.error(e); alert('通信エラー: ' + e); throw e; }
     },
-
     login: async function() {
         const id = document.getElementById('inp-shop-id').value;
         const pw = document.getElementById('inp-password').value;
@@ -55,16 +43,14 @@
             location.reload();
         }
     },
-
-    // --- キャスト管理 ---
+    // Casts
     loadCasts: async function() {
         const res = await this.postData('get_casts');
         const list = document.getElementById('cast-list');
         list.innerHTML = '';
         res.data.forEach(c => {
             const tr = document.createElement('tr');
-            tr.innerHTML = '<td>'+c.name+'</td><td>'+c.age+'</td><td>'+(c.is_active ? '在籍':'退店')+'</td>' +
-                           '<td><button onclick="UI.editCast(\''+c.id+'\')">編集</button></td>';
+            tr.innerHTML = `<td>${c.name}</td><td>${c.age}</td><td>${c.is_active?'在籍':'退店'}</td><td><button onclick="UI.editCast('${c.id}')">編集</button></td>`;
             tr.dataset.json = JSON.stringify(c);
             list.appendChild(tr);
         });
@@ -77,6 +63,8 @@
             document.getElementById('c-age').value = data.age;
             document.getElementById('c-height').value = data.height;
             document.getElementById('c-sizes').value = data.sizes;
+            document.getElementById('c-image').value = data.image_url || '';
+            document.getElementById('c-intro').value = data.introduction || '';
             document.getElementById('c-active').value = data.is_active;
         } else {
             document.getElementById('form-cast').reset();
@@ -95,6 +83,8 @@
             age: document.getElementById('c-age').value,
             height: document.getElementById('c-height').value,
             sizes: document.getElementById('c-sizes').value,
+            image_url: document.getElementById('c-image').value,
+            introduction: document.getElementById('c-intro').value,
             is_active: document.getElementById('c-active').value
         };
         await this.postData('save_cast', data);
@@ -102,8 +92,7 @@
         this.closeModal();
         this.loadCasts();
     },
-
-    // --- 出勤管理 ---
+    // Schedule
     loadSchedule: async function() {
         const date = document.getElementById('schedule-date').value;
         if(!date) return;
@@ -135,8 +124,7 @@
         await this.postData('save_schedule', { date: date, schedules: schedules });
         alert('シフトを保存しました！');
     },
-
-    // --- メニュー管理 ---
+    // Menu
     loadMenu: async function() {
         const res = await this.postData('get_menu');
         const list = document.getElementById('menu-list');
@@ -182,8 +170,7 @@
         this.closeMenuModal();
         this.loadMenu();
     },
-
-    // --- 予約管理 ---
+    // Reservations
     loadReservations: async function() {
         const res = await this.postData('get_reservations');
         const list = document.getElementById('res-list');
@@ -193,19 +180,8 @@
             if(r.status === 'pending') statusBadge = '<span style="background:#ffc107; padding:3px 8px; border-radius:10px;">未確定</span>';
             else if(r.status === 'confirmed') statusBadge = '<span style="background:#28a745; color:white; padding:3px 8px; border-radius:10px;">確定済</span>';
             else if(r.status === 'canceled') statusBadge = '<span style="background:#dc3545; color:white; padding:3px 8px; border-radius:10px;">キャンセル</span>';
-
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${r.date.split('T')[0]} ${r.time}</td>
-                <td>${r.cast_name}</td>
-                <td>${r.customer_name}</td>
-                <td>${r.course_name}</td>
-                <td>${statusBadge}</td>
-                <td>
-                    ${r.status === 'pending' ? `<button onclick="UI.updateRes('${r.id}', 'confirmed')" style="background:#28a745; color:white;">確定</button>` : ''}
-                    ${r.status !== 'canceled' ? `<button onclick="UI.updateRes('${r.id}', 'canceled')" style="background:#dc3545; color:white;">却下</button>` : ''}
-                </td>
-            `;
+            tr.innerHTML = `<td>${r.date.split('T')[0]} ${r.time}</td><td>${r.cast_name}</td><td>${r.customer_name}</td><td>${r.course_name}</td><td>${statusBadge}</td><td>${r.status === 'pending' ? `<button onclick="UI.updateRes('${r.id}', 'confirmed')" style="background:#28a745; color:white;">確定</button>` : ''}${r.status !== 'canceled' ? `<button onclick="UI.updateRes('${r.id}', 'canceled')" style="background:#dc3545; color:white;">却下</button>` : ''}</td>`;
             list.appendChild(tr);
         });
     },
@@ -216,7 +192,6 @@
         this.loadReservations();
     }
 };
-
 document.addEventListener('DOMContentLoaded', () => {
     UI.init();
     if(document.getElementById('cast-list')) UI.loadCasts();
