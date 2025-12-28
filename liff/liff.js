@@ -32,9 +32,18 @@
             card.className = 'cast-card';
             card.onclick = () => this.showCastDetail(c.id);
             const imgUrl = c.image_url ? c.image_url : 'https://via.placeholder.com/300x400/ffb6c1/ffffff?text=No+Image';
+            
+            // ★ここを変更：スリーサイズと紹介文を追加
+            const sizes = c.sizes ? c.sizes : '';
+            const intro = c.introduction ? c.introduction : '';
+
             card.innerHTML = `
                 <div class="cast-img-wrapper"><div class="cast-img" style="background-image: url('${imgUrl}');"></div></div>
-                <div class="cast-info"><h3>${c.name} <small>(${c.age})</small></h3><p class="meta">T${c.height}</p></div>
+                <div class="cast-info">
+                    <h3>${c.name} <small>(${c.age})</small></h3>
+                    <p class="meta">T${c.height} / ${sizes}</p>
+                    <div class="card-intro">${intro}</div>
+                </div>
             `;
             container.appendChild(card);
         });
@@ -52,9 +61,10 @@
         document.getElementById('detail-img').style.backgroundImage = `url('${imgUrl}')`;
         document.getElementById('detail-name').textContent = cast.name;
         document.getElementById('detail-age').textContent = `(${cast.age}歳)`;
+        // 詳細ページにもスリーサイズを表示
+        document.getElementById('detail-meta').textContent = `T${cast.height}cm / ${cast.sizes}`;
         document.getElementById('detail-intro').innerHTML = cast.introduction ? cast.introduction.replace(/\n/g, '<br>') : 'よろしくお願いします！';
         
-        // マトリクス読み込み開始
         const matrixEl = document.getElementById('schedule-matrix');
         if(matrixEl) matrixEl.innerHTML = '<div style="padding:20px;text-align:center;">スケジュール確認中...</div>';
         
@@ -80,31 +90,23 @@
         });
         html += '</tr></thead><tbody>';
 
-        const startHour = 12; 
-        const endHour = 29;   
-        
+        const startHour = 12; const endHour = 29;   
         for (let h = startHour; h < endHour; h++) {
             for (let min = 0; min < 60; min += 30) {
                 const hDisp = h % 24;
                 const timeStr = `${hDisp.toString().padStart(2,'0')}:${min.toString().padStart(2,'0')}`;
                 const timeVal = h * 100 + min; 
-
                 html += `<tr><td class="time-label">${timeStr}</td>`;
-                
                 data.forEach(day => {
                     let isShift = false;
-                    // シフト判定
                     if (day.shift && day.shift.start && day.shift.end) {
                         const sParts = day.shift.start.split(':'); const eParts = day.shift.end.split(':');
                         let sVal = parseInt(sParts[0])*100 + parseInt(sParts[1]);
                         let eVal = parseInt(eParts[0])*100 + parseInt(eParts[1]);
-                        if(sVal < 1000) sVal += 2400; // 深夜補正
-                        if(eVal < sVal) eVal += 2400;
+                        if(sVal < 1000) sVal += 2400; if(eVal < sVal) eVal += 2400;
                         if (timeVal >= sVal && timeVal < eVal) isShift = true;
                     }
-                    
                     let isBooked = day.bookings.includes(timeStr);
-
                     if (!isShift || isBooked) {
                         html += '<td class="cell-ng">✕</td>';
                     } else {
@@ -139,7 +141,9 @@
             if(m.type === 'course') {
                 const opt = document.createElement('option');
                 opt.value = m.id;
-                opt.textContent = `${m.name} (${m.minutes}分) - ${parseInt(m.price).toLocaleString()}円`;
+                // 指名料があれば表示
+                const feeText = m.nomination_fee && m.nomination_fee > 0 ? ` (指名料+${parseInt(m.nomination_fee).toLocaleString()}円)` : '';
+                opt.textContent = `${m.name} (${m.minutes}分) - ${parseInt(m.price).toLocaleString()}円${feeText}`;
                 sel.appendChild(opt);
             }
         });

@@ -76,3 +76,30 @@ button { cursor: pointer; border: none; font-size: 14px; font-weight: 600; borde
 .ws-inputs { display: flex; gap: 15px; align-items: center; }
 .ws-inputs select { width: 140px; background: #fff; cursor: pointer; }
 .day-sun { color: #ef4444; } .day-sat { color: #3b82f6; }
+
+/* --- お客様画面(一覧)のデザイン調整 --- */
+.cast-info h3 { 
+    margin: 0 0 5px; 
+    color: #ff1493; 
+    font-size: 16px; 
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.cast-info h3 small { 
+    font-size: 13px; color: #666; font-weight: normal; 
+}
+.cast-info .meta { 
+    font-size: 12px; color: #333; margin: 0 0 8px; font-weight: bold; background: #fff0f5; display: inline-block; padding: 2px 8px; border-radius: 10px;
+}
+.card-intro {
+    font-size: 11px;
+    color: #777;
+    margin: 0;
+    line-height: 1.4;
+    height: 32px; /* 2行分くらいの高さ */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; /* 2行で省略 */
+    text-align: center;
+    padding: 0 5px;
+}
