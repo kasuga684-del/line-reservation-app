@@ -1,40 +1,59 @@
 ﻿<!DOCTYPE html>
 <html lang='ja'>
 <head>
-<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
 <title>オンライン予約</title>
-<link rel='stylesheet' href='../common/ui.css'>
 <style>
+    /* === デザイン設定 (CSS) === */
     body { background: #fff0f5; margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; -webkit-tap-highlight-color: transparent; }
     #app-container { display: block !important; max-width: 480px; margin: 0 auto; background: #fff; min-height: 100vh; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
     header { background: linear-gradient(to right, #ff69b4, #ffb6c1); color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; letter-spacing: 1px; }
     .hidden { display: none !important; }
     
-    /* 一覧 */
+    /* 一覧画面 */
     #cast-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }
     .cast-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.1s; }
+    .cast-card:active { transform: scale(0.98); }
     .cast-img-wrapper { position: relative; padding-top: 133%; }
     .cast-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; background-color: #eee; }
     .cast-info { padding: 10px; text-align: center; }
-    .cast-info h3 { margin: 0; color: #ff1493; font-size: 16px; }
+    .cast-info h3 { margin: 0 0 5px; color: #ff1493; font-size: 16px; }
+    .cast-info .meta { font-size: 11px; color: #333; margin: 0 0 5px; background: #fff0f5; display: inline-block; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+    .card-intro { font-size: 10px; color: #777; margin: 0; line-height: 1.4; height: 2.8em; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 
-    /* 詳細 & マトリクス */
+    /* 詳細画面 */
     .detail-header { position: relative; }
     #detail-img { width: 100%; padding-top: 100%; background-size: cover; background-position: top center; background-color: #eee; }
-    .detail-prof { padding: 15px; background: #fff; }
-    .detail-prof h2 { color: #ff1493; font-size: 20px; }
-    .detail-intro-box { background: #fff5f8; padding: 10px; border-radius: 8px; font-size: 13px; margin-top: 10px; }
+    .detail-prof { padding: 20px; background: #fff; }
+    .detail-prof h2 { color: #ff1493; font-size: 22px; margin: 0 0 10px; }
+    
+    /* プロフィール情報 */
+    .detail-meta { 
+        font-size: 14px; font-weight: bold; color: #555; margin-bottom: 15px; 
+        background: #fdf2f8; display: inline-block; padding: 8px 15px; border-radius: 20px; 
+        border: 1px solid #fce7f3;
+    }
+    .detail-intro-box { 
+        background: #fff9fb; padding: 15px; border-radius: 8px; 
+        font-size: 14px; line-height: 1.6; color: #444; border: 1px solid #ffeef5; 
+    }
 
-    /* ★予約マトリクス★ */
-    .sch-wrapper { overflow-x: auto; padding: 10px; }
+    /* スケジュール表 (新しいデザイン) */
+    h3.sch-title { 
+        margin-top: 30px; margin-bottom: 15px;
+        border-left: 5px solid #ff1493; padding-left: 10px; 
+        font-size: 18px; color: #333; 
+    }
+    .sch-wrapper { overflow-x: auto; padding-bottom: 10px; }
     .sch-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: center; table-layout: fixed; }
-    .sch-table th { background: #f8f8f8; padding: 5px; border: 1px solid #eee; font-weight: bold; }
-    .sch-table td { padding: 8px; border: 1px solid #eee; height: 30px; vertical-align: middle; }
-    .col-sat { color: blue; background: #eef; }
-    .col-sun { color: red; background: #fee; }
-    .time-label { background: #fafafa; font-weight: bold; width: 50px; }
-    .cell-ng { color: #ccc; font-size: 16px; }
-    .cell-ok { color: #ff1493; font-weight: bold; font-size: 18px; cursor: pointer; background: #fff0f5; }
+    .sch-table th { background: #f9f9f9; padding: 8px 2px; border: 1px solid #eee; font-weight: bold; font-size: 11px; }
+    .sch-table td { padding: 8px 2px; border: 1px solid #eee; height: 40px; vertical-align: middle; }
+    .col-sat { color: blue; background: #f0f8ff; }
+    .col-sun { color: red; background: #fff0f0; }
+    .time-label { background: #fafafa; font-weight: bold; width: 45px; font-size: 11px; }
+    .cell-ng { color: #ddd; font-size: 16px; }
+    .cell-ok { color: #ff1493; font-weight: bold; font-size: 20px; cursor: pointer; background: #fff0f5; }
     .cell-ok:active { background: #ff69b4; color: white; }
 
     /* フォーム */
@@ -42,9 +61,8 @@
     .form-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
-    .form-group input, .form-group select { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 6px; }
-    
-    .btn-main { display: block; width: 100%; padding: 15px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 50px; cursor: pointer; background: linear-gradient(to right, #ff1493, #ff69b4); box-shadow: 0 4px 10px rgba(255, 20, 147, 0.3); margin-top: 20px; }
+    .form-group input, .form-group select { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; background: #f9f9f9; }
+    .btn-main { display: block; width: 100%; padding: 15px; font-size: 18px; font-weight: bold; text-align: center; color: white; border: none; border-radius: 50px; cursor: pointer; background: linear-gradient(to right, #ff1493, #ff69b4); box-shadow: 0 4px 10px rgba(255, 20, 147, 0.3); margin-top: 20px; }
     .btn-back { background: #fff; color: #666; border: 1px solid #ccc; margin-top: 10px; box-shadow: none; }
 </style>
 </head>
@@ -60,9 +78,11 @@
         <div class='detail-header'><div id='detail-img'></div></div>
         <div class='detail-prof'>
             <h2><span id='detail-name'></span><small id='detail-age'></small></h2>
+            
+            <div id='detail-meta' class='detail-meta'></div>
             <div id='detail-intro' class='detail-intro-box'></div>
             
-            <h3 style='margin-top:20px; border-bottom:2px solid #ff69b4; display:inline-block;'>スケジュール</h3>
+            <h3 class='sch-title'>スケジュール</h3>
             <div class='sch-wrapper' id='schedule-matrix'></div>
         </div>
         <div style='padding:15px;'>
@@ -79,10 +99,194 @@
             <div class='form-group'><label>コース選択</label><select id='res-course'><option>読み込み中...</option></select></div>
             <div class='form-group'><label>お名前 (フルネーム)</label><input type='text' id='res-name' placeholder='山田 太郎'></div>
             <div class='form-group'><label>お電話番号</label><input type='tel' id='res-tel' placeholder='09012345678'></div>
-            
             <button id='btn-submit' class='btn-main' onclick='LIFF_App.submit()'>この内容で予約する</button>
             <button class='btn-main btn-back' onclick='LIFF_App.switchView("view-detail")'>日時を選び直す</button>
         </div>
     </div>
 </div>
-<script src='../common/config.js'></script><script src='liff.js'></script></body></html>
+
+<script>
+// === 設定とプログラム (JS) ===
+const CONFIG = {
+    API_URL: 'https://script.google.com/macros/s/AKfycbwO_ary-ZVmoxfARgzybIMny8qgjzkT6mhHM2G3lZKBNWbLVtZdD_H0bL7MwBy_biGD/exec' 
+};
+
+const LIFF_App = {
+    shopId: 'demo',
+    selectedCastId: null,
+    castsData: [],
+    bookingData: { date: null, time: null },
+
+    init: async function() {
+        const params = new URLSearchParams(window.location.search);
+        if(params.has('shop')) this.shopId = params.get('shop');
+        await this.loadCasts();
+        await this.loadMenu();
+    },
+
+    postData: async function(act, pl = {}) {
+        const url = CONFIG.API_URL;
+        const body = { action: act, shop_id: this.shopId, ...pl };
+        try {
+            const res = await fetch(url, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
+            return await res.json();
+        } catch (e) { console.error(e); alert('通信エラー。再読み込みしてください。'); throw e; }
+    },
+
+    loadCasts: async function() {
+        const res = await this.postData('get_casts');
+        this.castsData = res.data;
+        const container = document.getElementById('cast-grid');
+        container.innerHTML = '';
+        if(!this.castsData || this.castsData.length === 0) { container.innerHTML = '<p style="text-align:center;padding:20px;">現在キャストは表示できません。</p>'; return; }
+        
+        this.castsData.forEach(c => {
+            const card = document.createElement('div');
+            card.className = 'cast-card';
+            card.onclick = () => this.showCastDetail(c.id);
+            const imgUrl = c.image_url ? c.image_url : 'https://via.placeholder.com/300x400/ffb6c1/ffffff?text=No+Image';
+            
+            // サイズと紹介文の取得
+            const sizes = c.sizes || '-';
+            const intro = c.introduction || '';
+
+            card.innerHTML = 
+                <div class="cast-img-wrapper"><div class="cast-img" style="background-image: url('');"></div></div>
+                <div class="cast-info">
+                    <h3> <small>()</small></h3>
+                    <div class="meta">T / </div>
+                    <div class="card-intro"></div>
+                </div>
+            ;
+            container.appendChild(card);
+        });
+    },
+
+    showCastDetail: async function(castId) {
+        const cast = this.castsData.find(c => c.id === castId);
+        if(!cast) return;
+        this.selectedCastId = castId;
+        
+        this.switchView('view-detail');
+        window.scrollTo(0, 0);
+
+        const imgUrl = cast.image_url ? cast.image_url : 'https://via.placeholder.com/400x500/ffb6c1/ffffff?text=No+Image';
+        document.getElementById('detail-img').style.backgroundImage = url('');
+        document.getElementById('detail-name').textContent = cast.name;
+        document.getElementById('detail-age').textContent = (歳);
+        
+        // ★詳細情報の表示
+        const metaEl = document.getElementById('detail-meta');
+        if(metaEl) metaEl.textContent = Tcm / ;
+        
+        const introEl = document.getElementById('detail-intro');
+        if(introEl) introEl.innerHTML = cast.introduction ? cast.introduction.replace(/\n/g, '<br>') : 'よろしくお願いします！';
+        
+        // スケジュール取得
+        const matrixEl = document.getElementById('schedule-matrix');
+        if(matrixEl) matrixEl.innerHTML = '<div style="padding:20px;text-align:center;">スケジュール確認中...</div>';
+        
+        try {
+            const res = await this.postData('get_weekly_availability', { cast_id: castId });
+            this.renderMatrix(res.data);
+        } catch(e) {
+            if(matrixEl) matrixEl.innerHTML = '<div style="padding:20px;text-align:center;color:red;">読み込み失敗</div>';
+        }
+    },
+
+    renderMatrix: function(data) {
+        const matrix = document.getElementById('schedule-matrix');
+        if(!matrix) return;
+
+        let html = '<table class="sch-table"><thead><tr><th>時間</th>';
+        data.forEach(d => {
+            const dateObj = new Date(d.date);
+            const mmdd = (dateObj.getMonth()+1) + '/' + dateObj.getDate();
+            const dayStr = ['日','月','火','水','木','金','土'][dateObj.getDay()];
+            const colorClass = dateObj.getDay()===0 ? 'col-sun' : (dateObj.getDay()===6 ? 'col-sat' : '');
+            html += <th class=""><br></th>;
+        });
+        html += '</tr></thead><tbody>';
+
+        const startHour = 12; const endHour = 29;   
+        for (let h = startHour; h < endHour; h++) {
+            for (let min = 0; min < 60; min += 30) {
+                const hDisp = h % 24;
+                const timeStr = ${hDisp.toString().padStart(2,'0')}:;
+                const timeVal = h * 100 + min; 
+                html += <tr><td class="time-label"></td>;
+                data.forEach(day => {
+                    let isShift = false;
+                    if (day.shift && day.shift.start && day.shift.end) {
+                        const sParts = day.shift.start.split(':'); const eParts = day.shift.end.split(':');
+                        let sVal = parseInt(sParts[0])*100 + parseInt(sParts[1]);
+                        let eVal = parseInt(eParts[0])*100 + parseInt(eParts[1]);
+                        if(sVal < 1000) sVal += 2400; if(eVal < sVal) eVal += 2400;
+                        if (timeVal >= sVal && timeVal < eVal) isShift = true;
+                    }
+                    let isBooked = day.bookings.includes(timeStr);
+                    if (!isShift || isBooked) {
+                        html += '<td class="cell-ng">✕</td>';
+                    } else {
+                        html += <td class="cell-ok" onclick="LIFF_App.selectSlot('', '')">〇</td>;
+                    }
+                });
+                html += '</tr>';
+            }
+        }
+        html += '</tbody></table>';
+        matrix.innerHTML = html;
+    },
+
+    selectSlot: function(date, time) {
+        this.bookingData.date = date;
+        this.bookingData.time = time;
+        this.switchView('view-form');
+        document.getElementById('confirm-datetime').textContent = ${date} ～;
+        window.scrollTo(0, 0);
+    },
+
+    switchView: function(viewId) {
+        ['view-list', 'view-detail', 'view-form'].forEach(id => { document.getElementById(id).classList.add('hidden'); });
+        document.getElementById(viewId).classList.remove('hidden');
+    },
+
+    loadMenu: async function() {
+        const res = await this.postData('get_menu');
+        const sel = document.getElementById('res-course');
+        sel.innerHTML = '<option value="">▼ コースを選択してください ▼</option>';
+        res.data.forEach(m => {
+            if(m.type === 'course') {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                const feeText = m.nomination_fee && m.nomination_fee > 0 ?  (指名料+円) : '';
+                opt.textContent = ${m.name} (分) - 円;
+                sel.appendChild(opt);
+            }
+        });
+    },
+
+    submit: async function() {
+        const data = {
+            cast_id: this.selectedCastId,
+            date: this.bookingData.date,
+            time: this.bookingData.time,
+            course_id: document.getElementById('res-course').value,
+            customer_name: document.getElementById('res-name').value,
+            customer_tel: document.getElementById('res-tel').value,
+            line_id: 'DUMMY_LINE_ID'
+        };
+        if(!data.course_id || !data.customer_name || !data.customer_tel) { alert('すべての項目を入力してください。'); return; }
+        const btn = document.getElementById('btn-submit');
+        btn.disabled = true; btn.textContent = '送信中...';
+        const res = await this.postData('save_reservation', data);
+        if(res.status === 'success') {
+            alert('予約リクエストを送信しました！\nお店からの連絡をお待ちください。');
+            location.reload();
+        } else { alert('エラー: ' + res.message); btn.disabled = false; }
+    }
+};
+document.addEventListener('DOMContentLoaded', () => LIFF_App.init());
+</script>
+</body>
+</html>
