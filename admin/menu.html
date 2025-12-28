@@ -17,7 +17,7 @@
             <button id='btn-new-course' class='btn-primary' style="background:#2563eb;">＋ コース追加</button>
         </div>
         <p style="color:#64748b; font-size:14px; margin-bottom:20px;">※基本料金となる時間制コースの設定です。</p>
-        <table><thead><tr><th>コース名</th><th>料金</th><th>時間</th><th>対象</th><th>操作</th></tr></thead><tbody id='course-list'></tbody></table>
+        <table><thead><tr><th>コース名</th><th>料金</th><th>時間 (指名料)</th><th>対象</th><th>操作</th></tr></thead><tbody id='course-list'></tbody></table>
     </div>
     <div class='card'>
         <div style='display:flex; justify-content:space-between; align-items:center;'>
@@ -33,21 +33,21 @@
 <div class='modal-content'>
     <h3 id="modal-title">メニュー編集</h3>
     <form id='form-menu' onsubmit='return false;'>
-        <input type='hidden' id='m-id'>
-        <input type='hidden' id='m-type'>
+        <input type='hidden' id='m-id'><input type='hidden' id='m-type'>
         <div class='form-group'><label>名称</label><input type='text' id='m-name' placeholder="例: 60分コース / 本指名料"></div>
+        
         <div id="input-area-course">
             <div style='display:flex; gap:15px;'>
                 <div class='form-group' style='flex:1;'><label>料金 (10,000円～)</label><select id='m-price-course'></select></div>
                 <div class='form-group' style='flex:1;'><label>時間 (60分～120分)</label><select id='m-minutes-course'></select></div>
             </div>
+            <div class='form-group'><label>指名料 (1,000円～5,000円)</label><select id='m-fee-course'></select></div>
         </div>
+
         <div id="input-area-option" class="hidden">
-            <div style='display:flex; gap:15px;'>
-                <div class='form-group' style='flex:1;'><label>料金 (円)</label><input type='number' id='m-price-option' placeholder="例: 2000"></div>
-                <div class='form-group' style='flex:1;'><label>時間 (分・任意)</label><input type='number' id='m-minutes-option' value="0"></div>
-            </div>
+            <div class='form-group'><label>料金 (円)</label><input type='number' id='m-price-option' placeholder="例: 2000"></div>
         </div>
+
         <div class='form-group'><label>対象キャスト</label><select id='m-cast'><option value='ALL'>全員共通</option></select></div>
         <div style='display:flex; gap:10px; margin-top:20px;'>
             <button id='btn-close-menu-modal' style='flex:1; background:#94a3b8; color:white;'>キャンセル</button>

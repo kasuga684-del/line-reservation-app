@@ -12,6 +12,7 @@
             for(let i=start; i<=end; i+=step) opts += `<option value="${i}">${i}${suffix}</option>`;
             return opts;
         };
+
         // キャスト用
         if(document.getElementById('c-age')) {
             document.getElementById('c-age').innerHTML = createOpt(18, 50, 1, '歳');
@@ -23,25 +24,29 @@
             let cupOpts = ''; cups.forEach(c => cupOpts += `<option value="${c}">${c}カップ</option>`);
             document.getElementById('c-cup').innerHTML = cupOpts;
         }
+        
         // メニュー用
         if(document.getElementById('m-price-course')) {
             document.getElementById('m-price-course').innerHTML = createOpt(10000, 40000, 2000, '円');
-            let timeOpts = ''; [60, 75, 90, 105, 120].forEach(t => timeOpts += `<option value="${t}">${t}分</option>`);
+            
+            // 時間 (60, 75... 120)
+            let timeOpts = ''; 
+            [60, 75, 90, 105, 120].forEach(t => timeOpts += `<option value="${t}">${t}分</option>`);
             document.getElementById('m-minutes-course').innerHTML = timeOpts;
+
+            // ★指名料 (1000～5000, 500円刻み)
+            document.getElementById('m-fee-course').innerHTML = createOpt(1000, 5000, 500, '円');
         }
     },
 
     bindEvents: function() {
         if(document.getElementById('btn-login')) document.getElementById('btn-login').addEventListener('click', () => this.login());
-        // キャスト
         if(document.getElementById('btn-new-cast')) document.getElementById('btn-new-cast').addEventListener('click', () => this.openModal());
         if(document.getElementById('btn-save-cast')) document.getElementById('btn-save-cast').addEventListener('click', () => this.saveCast());
         if(document.getElementById('btn-close-modal')) document.getElementById('btn-close-modal').addEventListener('click', () => this.closeModal());
-        // シフト
         const wsCast = document.getElementById('ws-cast');
         if(wsCast) wsCast.addEventListener('change', (e) => this.loadCastWeeklyData(e.target.value));
         if(document.getElementById('btn-save-weekly')) document.getElementById('btn-save-weekly').addEventListener('click', () => this.saveWeeklyShift());
-        // メニュー
         if(document.getElementById('btn-new-course')) document.getElementById('btn-new-course').addEventListener('click', () => this.openMenuModal('course'));
         if(document.getElementById('btn-new-option')) document.getElementById('btn-new-option').addEventListener('click', () => this.openMenuModal('option'));
         if(document.getElementById('btn-save-menu')) document.getElementById('btn-save-menu').addEventListener('click', () => this.saveMenu());
@@ -58,7 +63,6 @@
             if(overlay) overlay.classList.remove('hidden');
         }
     },
-
     postData: async function(act, pl = {}) {
         const url = CONFIG.API_URL;
         const body = { action: act, token: localStorage.getItem('auth_token'), ...pl };
@@ -69,7 +73,6 @@
             return json;
         } catch (e) { console.error(e); alert('通信エラー: ' + e); throw e; }
     },
-
     login: async function() {
         const id = document.getElementById('inp-shop-id').value;
         const pw = document.getElementById('inp-password').value;
@@ -82,8 +85,6 @@
             location.reload();
         }
     },
-
-    // --- キャスト管理 ---
     loadCasts: async function() {
         const res = await this.postData('get_casts');
         const list = document.getElementById('cast-list');
@@ -91,10 +92,7 @@
         res.data.forEach(c => {
             const tr = document.createElement('tr');
             tr.innerHTML = `<td><div style="font-weight:bold;">${c.name}</div></td><td>${c.age}歳</td><td>${c.is_active?'<span style="color:#2563eb;font-weight:bold;">在籍</span>':'<span style="color:#94a3b8;">退店</span>'}</td>
-            <td>
-                <button class="btn-primary btn-sm" onclick="UI.editCast('${c.id}')">編集</button>
-                <button class="btn-danger btn-sm" onclick="UI.deleteItem('cast', '${c.id}')" style="margin-left:5px;">削除</button>
-            </td>`;
+            <td><button class="btn-primary btn-sm" onclick="UI.editCast('${c.id}')">編集</button><button class="btn-danger btn-sm" onclick="UI.deleteItem('cast', '${c.id}')" style="margin-left:5px;">削除</button></td>`;
             tr.dataset.json = JSON.stringify(c);
             list.appendChild(tr);
         });
@@ -142,8 +140,6 @@
         };
         await this.postData('save_cast', data); alert('保存しました'); this.closeModal(); this.loadCasts();
     },
-
-    // --- 削除機能 ---
     deleteItem: async function(type, id) {
         if(!confirm('本当に削除しますか？\n※この操作は取り消せません。')) return;
         await this.postData('delete_data', { target_type: type, target_id: id });
@@ -151,8 +147,6 @@
         if(type === 'cast') this.loadCasts();
         else this.loadMenu();
     },
-
-    // --- 週間シフト ---
     generateTimeOptions: function() {
         let options = '<option value="">-- 休 --</option>'; const startHour = 12; const totalHours = 24; 
         for(let i=0; i<totalHours * 2; i++) {
@@ -219,7 +213,7 @@
         alert('週間シフトを保存しました！');
     },
 
-    // --- メニュー管理 ---
+    // --- メニュー管理 (指名料・シンプルオプション) ---
     loadMenu: async function() {
         const res = await this.postData('get_menu');
         const courseList = document.getElementById('course-list');
@@ -228,11 +222,16 @@
 
         res.data.forEach(m => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${m.name}</td><td>${parseInt(m.price).toLocaleString()}円</td><td>${m.minutes ? m.minutes + '分' : '-'}</td><td>${m.cast_name||'全員'}</td>
-            <td>
-                <button class="btn-primary btn-sm" onclick="UI.editMenu('${m.id}')">編集</button>
-                <button class="btn-danger btn-sm" onclick="UI.deleteItem('menu', '${m.id}')" style="margin-left:5px;">削除</button>
-            </td>`;
+            // 表示ロジック: コースなら「指名料」も表示、オプションなら「時間」は無視
+            let info = '';
+            if(m.type === 'course') {
+                info = `<div>${m.minutes}分</div><div style="font-size:11px;color:#64748b;">(指名料 +${parseInt(m.nomination_fee||0).toLocaleString()}円)</div>`;
+            } else {
+                info = '-';
+            }
+
+            tr.innerHTML = `<td>${m.name}</td><td>${parseInt(m.price).toLocaleString()}円</td><td>${info}</td><td>${m.cast_name||'全員'}</td>
+            <td><button class="btn-primary btn-sm" onclick="UI.editMenu('${m.id}')">編集</button><button class="btn-danger btn-sm" onclick="UI.deleteItem('menu', '${m.id}')" style="margin-left:5px;">削除</button></td>`;
             tr.dataset.json = JSON.stringify(m);
             if(m.type === 'course') courseList.appendChild(tr); else optionList.appendChild(tr);
         });
@@ -264,9 +263,9 @@
                  if(target.type === 'course') {
                      document.getElementById('m-price-course').value = target.price;
                      document.getElementById('m-minutes-course').value = target.minutes;
+                     document.getElementById('m-fee-course').value = target.nomination_fee || 0;
                  } else {
                      document.getElementById('m-price-option').value = target.price;
-                     document.getElementById('m-minutes-option').value = target.minutes || 0;
                  }
              }
         });
@@ -274,16 +273,19 @@
     saveMenu: async function() {
         const type = document.getElementById('m-type').value;
         const price = type === 'course' ? document.getElementById('m-price-course').value : document.getElementById('m-price-option').value;
-        const minutes = type === 'course' ? document.getElementById('m-minutes-course').value : document.getElementById('m-minutes-option').value;
+        
+        // オプションなら時間は0固定
+        const minutes = type === 'course' ? document.getElementById('m-minutes-course').value : 0;
+        const fee = type === 'course' ? document.getElementById('m-fee-course').value : 0;
+
         if(!price) { alert('料金を入力してください'); return; }
         const data = {
             id: document.getElementById('m-id').value, type: type, name: document.getElementById('m-name').value,
-            price: price, minutes: minutes, cast_id: document.getElementById('m-cast').value, is_active: true
+            price: price, minutes: minutes, nomination_fee: fee,
+            cast_id: document.getElementById('m-cast').value, is_active: true
         };
         await this.postData('save_menu', data); alert('保存しました'); this.closeMenuModal(); this.loadMenu();
     },
-
-    // --- 予約管理 ---
     loadReservations: async function() {
         const res = await this.postData('get_reservations');
         const list = document.getElementById('res-list');
