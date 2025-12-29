@@ -1,105 +1,59 @@
 ﻿@charset "UTF-8";
-/* ベース設定 */
-:root {
-    --primary: #2563eb; /* 信頼感のあるブルー */
-    --primary-dark: #1e40af;
-    --secondary: #64748b;
-    --accent: #f43f5e; /* 削除・キャンセル用 */
-    --bg-body: #f1f5f9; /* 薄いグレーの背景 */
-    --bg-card: #ffffff;
-    --text-main: #0f172a;
-    --text-sub: #475569;
-    --border: #e2e8f0;
-    --sidebar-w: 260px;
-}
-body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg-body); color: var(--text-main); display: flex; min-height: 100vh; }
-*, *::before, *::after { box-sizing: border-box; }
+:root { --primary: #ff1493; --bg: #fff0f5; --text: #333; }
+body { margin:0; padding:0; font-family:"Helvetica Neue",Arial,sans-serif; background:var(--bg); color:var(--text); -webkit-tap-highlight-color:transparent; }
 
-/* サイドバー */
-#sidebar {
-    width: var(--sidebar-w); background: #1e293b; color: #fff; position: fixed; height: 100vh; top: 0; left: 0;
-    display: flex; flex-direction: column; padding: 20px 0; box-shadow: 4px 0 10px rgba(0,0,0,0.1); z-index: 100;
-}
-#sidebar h2 { margin: 0 0 30px 0; padding: 0 24px; font-size: 20px; font-weight: bold; letter-spacing: 1px; color: #fff; }
-#sidebar h2 span { color: #60a5fa; }
-.menu-item {
-    padding: 16px 24px; color: #94a3b8; text-decoration: none; font-size: 15px; font-weight: 500; transition: all 0.2s; display: flex; align-items: center; cursor: pointer; border-left: 4px solid transparent;
-}
-.menu-item:hover { background: #334155; color: #fff; }
-.menu-item.active { background: #0f172a; color: #60a5fa; border-left-color: #60a5fa; }
+/* --- 共通スタイル --- */
+.hidden { display:none!important; }
+input, select, textarea { width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box; margin-bottom:10px; font-size:16px; background:#fff; }
+button { cursor:pointer; font-size:14px; font-weight:bold; border-radius:4px; border:none; padding:10px 20px; transition:0.2s; }
+.btn-primary { background:#2563eb; color:#fff; } /* 管理用青 */
+.btn-danger { background:#dc2626; color:#fff; font-size:12px; padding:5px 10px; }
+.btn-main { background:linear-gradient(to right, #ff1493, #ff69b4); color:white; width:100%; font-size:18px; border-radius:50px; padding:15px; margin-top:20px; box-shadow:0 4px 10px rgba(255,20,147,0.3); } /* お客様用ピンク */
+.btn-back { background:#fff; color:#666; border:1px solid #ccc; width:100%; font-size:16px; border-radius:50px; padding:12px; margin-top:10px; }
 
-/* メインコンテンツエリア */
-#app-container { flex: 1; margin-left: var(--sidebar-w); width: calc(100% - var(--sidebar-w)); }
-#main-content { padding: 40px; max-width: 1200px; margin: 0 auto; }
+/* --- 管理画面レイアウト --- */
+#admin-sidebar { width:260px; background:#1e293b; color:#fff; position:fixed; height:100vh; top:0; left:0; padding:20px 0; z-index:100; }
+#admin-sidebar h2 { text-align:center; font-size:20px; margin-bottom:30px; letter-spacing:1px; }
+.menu-item { display:block; padding:15px 25px; color:#94a3b8; text-decoration:none; transition:0.2s; cursor:pointer; }
+.menu-item:hover, .menu-item.active { background:#334155; color:#fff; border-left:4px solid #3b82f6; }
+#admin-main { margin-left:260px; padding:40px; }
+.card { background:#fff; border-radius:8px; padding:25px; margin-bottom:20px; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
+.card h3 { margin-top:0; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
+table { width:100%; border-collapse:collapse; }
+th { background:#f8fafc; padding:12px; text-align:left; border-bottom:2px solid #e2e8f0; color:#64748b; font-size:14px; }
+td { padding:12px; border-bottom:1px solid #e2e8f0; }
 
-/* カードスタイル */
-.card {
-    background: var(--bg-card); border-radius: 12px; padding: 30px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    margin-bottom: 24px;
-}
-.card h3 { margin-top: 0; font-size: 22px; color: var(--text-main); border-bottom: 2px solid var(--border); padding-bottom: 15px; margin-bottom: 25px; }
+/* --- お客様画面レイアウト --- */
+#client-app { max-width:480px; margin:0 auto; background:#fff; min-height:100vh; box-shadow:0 0 20px rgba(0,0,0,0.05); }
+header { background:linear-gradient(to right, #ff69b4, #ffb6c1); color:#fff; padding:15px; text-align:center; font-weight:bold; font-size:18px; }
+#cast-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px; }
+.cast-card { background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,0.1); cursor:pointer; }
+.cast-img-wrapper { position:relative; padding-top:133%; }
+.cast-img { position:absolute; top:0; left:0; width:100%; height:100%; background-size:cover; background-position:center; background-color:#eee; }
+.cast-info { padding:10px; text-align:center; }
+.cast-info h3 { margin:5px 0; color:var(--primary); font-size:16px; }
+.cast-info .meta { font-size:11px; background:#fff0f5; padding:2px 8px; border-radius:4px; display:inline-block; color:#333; }
+.card-intro { font-size:10px; color:#777; margin-top:5px; line-height:1.4; height:2.8em; overflow:hidden; }
 
-/* テーブル */
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th { background: #f8fafc; color: var(--text-sub); font-weight: 600; text-align: left; padding: 16px; border-bottom: 2px solid var(--border); font-size: 14px; }
-td { padding: 16px; border-bottom: 1px solid var(--border); color: var(--text-main); vertical-align: middle; }
-tr:hover td { background: #f8fafc; }
+/* 詳細ページ */
+#detail-img { width:100%; padding-top:100%; background-size:cover; }
+.detail-prof { padding:20px; }
+.detail-prof h2 { color:var(--primary); margin:0 0 10px; }
+.detail-meta { font-size:14px; background:#fdf2f8; padding:8px 15px; border-radius:20px; border:1px solid #fce7f3; display:inline-block; margin-bottom:15px; font-weight:bold; color:#555; }
+.detail-intro-box { background:#fff9fb; padding:15px; border-radius:8px; font-size:14px; line-height:1.6; color:#444; border:1px solid #ffeef5; }
+h3.sch-title { margin-top:30px; border-left:5px solid var(--primary); padding-left:10px; font-size:18px; color:#333; margin-bottom:15px; }
 
-/* フォーム・ボタン */
-input, select, textarea {
-    width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 15px; color: var(--text-main); transition: border 0.2s;
-}
-input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+/* スケジュール表 */
+.sch-wrapper { overflow-x:auto; }
+.sch-table { width:100%; border-collapse:collapse; font-size:12px; text-align:center; table-layout:fixed; }
+.sch-table th { background:#f9f9f9; padding:8px 2px; border:1px solid #eee; }
+.sch-table td { padding:8px 2px; border:1px solid #eee; height:40px; vertical-align:middle; }
+.col-sat { color:blue; background:#f0f8ff; } .col-sun { color:red; background:#fff0f0; }
+.cell-ok { color:var(--primary); font-weight:bold; font-size:20px; cursor:pointer; background:#fff0f5; }
+.cell-ng { color:#ddd; font-size:16px; }
 
-button { cursor: pointer; border: none; font-size: 14px; font-weight: 600; border-radius: 6px; padding: 10px 20px; transition: 0.2s; }
-.btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-.btn-danger { background: var(--accent); color: white; }
-.btn-danger:hover { opacity: 0.9; }
-.btn-sm { padding: 6px 12px; font-size: 12px; }
-
-/* モーダル */
-.hidden { display: none !important; }
-#login-overlay, .modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8);
-    display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px);
-}
-.modal-content { background: white; padding: 40px; border-radius: 16px; width: 500px; max-width: 90%; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-.form-group { margin-bottom: 20px; }
-.form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-sub); }
-
-/* 週間シフト入力画面のスタイル */
-.ws-row { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
-.ws-row:last-child { border-bottom: none; }
-.ws-date { width: 180px; font-weight: bold; }
-.ws-inputs { display: flex; gap: 15px; align-items: center; }
-.ws-inputs select { width: 140px; background: #fff; cursor: pointer; }
-.day-sun { color: #ef4444; } .day-sat { color: #3b82f6; }
-
-/* --- お客様画面(一覧)のデザイン調整 --- */
-.cast-info h3 { 
-    margin: 0 0 5px; 
-    color: #ff1493; 
-    font-size: 16px; 
-    display: flex; align-items: center; justify-content: center; gap: 5px;
-}
-.cast-info h3 small { 
-    font-size: 13px; color: #666; font-weight: normal; 
-}
-.cast-info .meta { 
-    font-size: 12px; color: #333; margin: 0 0 8px; font-weight: bold; background: #fff0f5; display: inline-block; padding: 2px 8px; border-radius: 10px;
-}
-.card-intro {
-    font-size: 11px;
-    color: #777;
-    margin: 0;
-    line-height: 1.4;
-    height: 32px; /* 2行分くらいの高さ */
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2; /* 2行で省略 */
-    text-align: center;
-    padding: 0 5px;
-}
+/* 管理画面シフト入力 */
+.ws-row { display:flex; align-items:center; padding:10px; border-bottom:1px solid #eee; }
+.ws-date { width:140px; font-weight:bold; }
+.ws-inputs { display:flex; gap:10px; flex:1; }
+.ws-inputs select { margin:0; }
