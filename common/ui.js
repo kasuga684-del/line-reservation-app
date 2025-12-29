@@ -3,57 +3,64 @@
         this.checkAuth();
         this.initDropdowns();
         this.bindEvents();
-        this.navigate('home');
+        // 初期表示
+        const page = document.body.dataset.page || 'home';
+        this.navigate(page);
     },
     navigate: function(id) {
-        document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-        document.getElementById('view-' + id).classList.remove('hidden');
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        const target = document.getElementById('view-' + id);
+        if(target) {
+            target.classList.add('active');
+            if(id==='casts') this.loadCasts();
+            if(id==='schedule') this.loadWeeklyShiftEditor();
+            if(id==='menu') this.loadMenu();
+            if(id==='reservations') this.loadReservations();
+        }
         document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
         const nav = document.getElementById('nav-' + id);
         if(nav) nav.classList.add('active');
-        
-        if(id==='casts') this.loadCasts();
-        if(id==='schedule') this.loadWeeklyShiftEditor();
-        if(id==='menu') this.loadMenu();
-        if(id==='reservations') this.loadReservations();
     },
     initDropdowns: function() {
-        const opt = (s,e,st=1,sx='') => { let o=''; for(let i=s;i<=e;i+=st)o+=`<option value="${i}">${i}${sx}</option>`; return o; };
+        const createOpt = (s,e,st=1,sx='') => { let o=''; for(let i=s;i<=e;i+=st)o+=`<option value="${i}">${i}${sx}</option>`; return o; };
         if(document.getElementById('c-age')) {
-            document.getElementById('c-age').innerHTML = opt(18,50,1,'歳');
-            document.getElementById('c-height').innerHTML = opt(135,175,1,'cm');
-            document.getElementById('c-bust').innerHTML = opt(70,120);
-            document.getElementById('c-waist').innerHTML = opt(50,100);
-            document.getElementById('c-hip').innerHTML = opt(70,120);
+            document.getElementById('c-age').innerHTML = createOpt(18,50,1,'歳');
+            document.getElementById('c-height').innerHTML = createOpt(135,175,1,'cm');
+            document.getElementById('c-bust').innerHTML = createOpt(70,120);
+            document.getElementById('c-waist').innerHTML = createOpt(50,100);
+            document.getElementById('c-hip').innerHTML = createOpt(70,120);
             let c=''; ['A','B','C','D','E','F','G','H','I','J','K','L'].forEach(x=>c+=`<option value="${x}">${x}カップ</option>`);
             document.getElementById('c-cup').innerHTML = c;
         }
         if(document.getElementById('m-price-course')) {
-            document.getElementById('m-price-course').innerHTML = opt(10000,40000,2000,'円');
+            document.getElementById('m-price-course').innerHTML = createOpt(10000,40000,2000,'円');
             let t=''; [60,75,90,105,120].forEach(x=>t+=`<option value="${x}">${x}分</option>`);
             document.getElementById('m-minutes-course').innerHTML = t;
-            document.getElementById('m-fee-course').innerHTML = opt(1000,5000,500,'円');
+            document.getElementById('m-fee-course').innerHTML = createOpt(1000,5000,500,'円');
         }
     },
     bindEvents: function() {
-        const click = (id, fn) => { const el=document.getElementById(id); if(el) el.addEventListener('click', fn); };
-        click('btn-login', ()=>this.login());
-        click('btn-new-cast', ()=>this.openModal('cast-modal'));
-        click('btn-save-cast', ()=>this.saveCast());
-        click('btn-close-modal', ()=>document.getElementById('cast-modal').classList.add('hidden'));
-        click('btn-save-weekly', ()=>this.saveWeeklyShift());
-        click('btn-new-course', ()=>this.openMenuModal('course'));
-        click('btn-new-option', ()=>this.openMenuModal('option'));
-        click('btn-save-menu', ()=>this.saveMenu());
-        click('btn-close-menu-modal', ()=>document.getElementById('menu-modal').classList.add('hidden'));
+        // ボタンイベントの紐づけ
+        const bind = (id, func) => { const el=document.getElementById(id); if(el) el.addEventListener('click', func); };
+        bind('btn-login', ()=>this.login());
+        bind('btn-new-cast', ()=>this.openModal('cast-modal'));
+        bind('btn-save-cast', ()=>this.saveCast());
+        bind('btn-close-modal', ()=>document.getElementById('cast-modal').classList.add('hidden'));
+        bind('btn-save-weekly', ()=>this.saveWeeklyShift());
+        bind('btn-new-course', ()=>this.openMenuModal('course'));
+        bind('btn-new-option', ()=>this.openMenuModal('option'));
+        bind('btn-save-menu', ()=>this.saveMenu());
+        bind('btn-close-menu-modal', ()=>document.getElementById('menu-modal').classList.add('hidden'));
         
-        const ws = document.getElementById('ws-cast');
-        if(ws) ws.addEventListener('change', (e)=>this.loadCastWeeklyData(e.target.value));
+        const wsCast = document.getElementById('ws-cast');
+        if(wsCast) wsCast.addEventListener('change', (e)=>this.loadCastWeeklyData(e.target.value));
     },
     checkAuth: function() {
+        if(!document.body.classList.contains('admin-mode')) return; 
         const token = localStorage.getItem('auth_token');
         const overlay = document.getElementById('login-overlay');
-        if(token) overlay.classList.add('hidden'); else overlay.classList.remove('hidden');
+        if(token) overlay.classList.add('hidden');
+        else overlay.classList.remove('hidden');
     },
     postData: async function(act, pl={}) {
         try {
@@ -68,15 +75,21 @@
         const res = await this.postData('login', {shop_id:id, password:pw});
         if(res.status==='success') { localStorage.setItem('auth_token', res.token); location.reload(); }
     },
+    // --- キャスト ---
     loadCasts: async function() {
         const res = await this.postData('get_casts');
-        const list = document.getElementById('cast-list'); list.innerHTML='';
-        const ws = document.getElementById('ws-cast'); if(ws) ws.innerHTML='<option value="">▼ キャスト選択</option>';
+        const list = document.getElementById('cast-list');
+        list.innerHTML = '';
+        const ws = document.getElementById('ws-cast'); // シフト用のプルダウンも更新
+        if(ws) ws.innerHTML = '<option value="">▼ キャストを選択</option>';
+        
         res.data.forEach(c => {
+            // 一覧
             const tr = document.createElement('tr');
             tr.innerHTML = `<td>${c.name}</td><td>${c.age}歳</td><td>${c.is_active?'在籍':'退店'}</td><td><button class="btn-primary" onclick="UI.editCast('${c.id}')">編集</button> <button class="btn-danger" onclick="UI.deleteItem('cast','${c.id}')">削除</button></td>`;
             tr.dataset.json = JSON.stringify(c);
             list.appendChild(tr);
+            // シフト用
             if(ws && c.is_active) { const opt=document.createElement('option'); opt.value=c.id; opt.textContent=c.name; ws.appendChild(opt); }
         });
     },
@@ -85,6 +98,7 @@
         if(id==='cast-modal') {
             document.getElementById('form-cast').reset();
             document.getElementById('c-id').value='';
+            // 初期値
             document.getElementById('c-age').value=20; document.getElementById('c-height').value=160;
             document.getElementById('c-bust').value=85; document.getElementById('c-cup').value='D';
             document.getElementById('c-waist').value=58; document.getElementById('c-hip').value=88;
@@ -93,13 +107,15 @@
     editCast: function(id) {
         const rows = document.querySelectorAll('#cast-list tr');
         rows.forEach(r => {
-            const d = JSON.parse(r.dataset.json);
-            if(d.id===id) {
+            const data = JSON.parse(r.dataset.json);
+            if(data.id === id) {
                 this.openModal('cast-modal');
-                document.getElementById('c-id').value=d.id; document.getElementById('c-name').value=d.name;
-                document.getElementById('c-age').value=d.age; document.getElementById('c-height').value=d.height;
-                document.getElementById('c-image').value=d.image_url; document.getElementById('c-intro').value=d.introduction;
-                const m = (d.sizes||'').match(/B(\d+)\(([A-Z])\)-W(\d+)-H(\d+)/);
+                document.getElementById('c-id').value = data.id;
+                document.getElementById('c-name').value = data.name;
+                document.getElementById('c-age').value = data.age;
+                document.getElement                document.getElementById('c-image').value = data.image_url;
+                document.getElementById('c-intro').value = data.introduction;
+                const m = (data.sizes||'').match(/B(\d+)\(([A-Z])\)-W(\d+)-H(\d+)/);
                 if(m) {
                     document.getElementById('c-bust').value=m[1]; document.getElementById('c-cup').value=m[2];
                     document.getElementById('c-waist').value=m[3]; document.getElementById('c-hip').value=m[4];
@@ -121,9 +137,11 @@
         await this.postData('delete_data', {target_type:type, target_id:id}); alert('削除しました');
         if(type==='cast') this.loadCasts(); else this.loadMenu();
     },
+    // --- シフト ---
     loadWeeklyShiftEditor: function() {
         const con = document.getElementById('ws-container'); con.innerHTML = '';
         const today = new Date();
+        // 30分単位プルダウン作成
         let opts = '<option value="">-- 休 --</option>';
         for(let i=0;i<48;i++){
             let m=i*30 + (12*60); let h=Math.floor(m/60); let mm=m%60; let hd=h%24;
@@ -137,20 +155,22 @@
             let cls = d.getDay()===0?'color:red':(d.getDay()===6?'color:blue':'');
             let row = document.createElement('div');
             row.className = 'ws-row';
-            row.innerHTML = `<span class="ws-date" style="${cls}">${ds} (${w})</span>
-            <div class="ws-inputs"><select class="ws-start" data-date="${ds}">${opts}</select> ～ <select class="ws-end" data-date="${ds}">${opts}</select></div>`;
+            row.style.padding='10px'; row.style.borderBottom='1px solid #eee';
+            row.innerHTML = `<span style="display:inline-block;width:150px;font-weight:bold;${cls}">${ds} (${w})</span>
+            <select class="ws-start" data-date="${ds}">${opts}</select> ～ <select class="ws-end" data-date="${ds}">${opts}</select>`;
             con.appendChild(row);
         }
     },
     loadCastWeeklyData: async function(id) {
         if(!id) return;
         const res = await this.postData('get_weekly_availability', {cast_id:id});
-        document.querySelectorAll('.ws-row').forEach(r => {
-            const s = r.querySelector('.ws-start'); const e = r.querySelector('.ws-end');
-            const d = s.dataset.date;
+        const rows = document.querySelectorAll('.ws-row');
+        rows.forEach(r => {
+            const start = r.querySelector('.ws-start'); const end = r.querySelector('.ws-end');
+            const d = start.dataset.date;
             const t = res.data.find(x => x.date === d);
-            if(t && t.shift) { s.value = t.shift.start||''; e.value = t.shift.end||''; }
-            else { s.value=''; e.value=''; }
+            if(t && t.shift) { start.value = t.shift.start||''; end.value = t.shift.end||''; }
+            else { start.value=''; end.value=''; }
         });
     },
     saveWeeklyShift: async function() {
@@ -162,6 +182,7 @@
         });
         await this.postData('save_weekly_shift', {cast_id:id, shifts:shifts}); alert('保存しました');
     },
+    // --- メニュー ---
     loadMenu: async function() {
         const res = await this.postData('get_menu');
         const cl = document.getElementById('course-list'); const ol = document.getElementById('option-list');
@@ -210,6 +231,7 @@
         };
         await this.postData('save_menu', d); alert('保存しました'); document.getElementById('menu-modal').classList.add('hidden'); this.loadMenu();
     },
+    // --- 予約 ---
     loadReservations: async function() {
         const res = await this.postData('get_reservations');
         const list = document.getElementById('res-list'); list.innerHTML='';

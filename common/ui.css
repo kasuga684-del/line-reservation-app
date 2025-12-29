@@ -1,59 +1,29 @@
 ﻿@charset "UTF-8";
 :root { --primary: #ff1493; --bg: #fff0f5; --text: #333; }
-body { margin:0; padding:0; font-family:"Helvetica Neue",Arial,sans-serif; background:var(--bg); color:var(--text); -webkit-tap-highlight-color:transparent; }
-
-/* --- 共通スタイル --- */
-.hidden { display:none!important; }
-input, select, textarea { width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box; margin-bottom:10px; font-size:16px; background:#fff; }
-button { cursor:pointer; font-size:14px; font-weight:bold; border-radius:4px; border:none; padding:10px 20px; transition:0.2s; }
-.btn-primary { background:#2563eb; color:#fff; } /* 管理用青 */
-.btn-danger { background:#dc2626; color:#fff; font-size:12px; padding:5px 10px; }
-.btn-main { background:linear-gradient(to right, #ff1493, #ff69b4); color:white; width:100%; font-size:18px; border-radius:50px; padding:15px; margin-top:20px; box-shadow:0 4px 10px rgba(255,20,147,0.3); } /* お客様用ピンク */
-.btn-back { background:#fff; color:#666; border:1px solid #ccc; width:100%; font-size:16px; border-radius:50px; padding:12px; margin-top:10px; }
-
-/* --- 管理画面レイアウト --- */
-#admin-sidebar { width:260px; background:#1e293b; color:#fff; position:fixed; height:100vh; top:0; left:0; padding:20px 0; z-index:100; }
-#admin-sidebar h2 { text-align:center; font-size:20px; margin-bottom:30px; letter-spacing:1px; }
-.menu-item { display:block; padding:15px 25px; color:#94a3b8; text-decoration:none; transition:0.2s; cursor:pointer; }
-.menu-item:hover, .menu-item.active { background:#334155; color:#fff; border-left:4px solid #3b82f6; }
-#admin-main { margin-left:260px; padding:40px; }
-.card { background:#fff; border-radius:8px; padding:25px; margin-bottom:20px; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
-.card h3 { margin-top:0; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
-table { width:100%; border-collapse:collapse; }
-th { background:#f8fafc; padding:12px; text-align:left; border-bottom:2px solid #e2e8f0; color:#64748b; font-size:14px; }
-td { padding:12px; border-bottom:1px solid #e2e8f0; }
-
-/* --- お客様画面レイアウト --- */
-#client-app { max-width:480px; margin:0 auto; background:#fff; min-height:100vh; box-shadow:0 0 20px rgba(0,0,0,0.05); }
+body { margin:0; padding:0; font-family:"Helvetica Neue",Arial,sans-serif; background:var(--bg); color:var(--text); }
+/* 管理画面用 */
+#sidebar { width:250px; background:#222; color:#fff; position:fixed; height:100vh; padding:20px 0; }
+#sidebar h2 { text-align:center; margin-bottom:30px; }
+.menu-item { display:block; padding:15px 20px; color:#aaa; cursor:pointer; text-decoration:none; }
+.menu-item:hover, .menu-item.active { background:#444; color:#fff; border-left:4px solid var(--primary); }
+#app-container.admin-mode { margin-left:250px; padding:20px; background:#fff; min-height:100vh; }
+.card { background:#fff; border:1px solid #ddd; padding:20px; border-radius:8px; margin-bottom:20px; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
+/* お客様画面用 */
+#app-container.client-mode { max-width:480px; margin:0 auto; background:#fff; min-height:100vh; }
 header { background:linear-gradient(to right, #ff69b4, #ffb6c1); color:#fff; padding:15px; text-align:center; font-weight:bold; font-size:18px; }
-#cast-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px; }
 .cast-card { background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,0.1); cursor:pointer; }
 .cast-img-wrapper { position:relative; padding-top:133%; }
 .cast-img { position:absolute; top:0; left:0; width:100%; height:100%; background-size:cover; background-position:center; background-color:#eee; }
 .cast-info { padding:10px; text-align:center; }
-.cast-info h3 { margin:5px 0; color:var(--primary); font-size:16px; }
-.cast-info .meta { font-size:11px; background:#fff0f5; padding:2px 8px; border-radius:4px; display:inline-block; color:#333; }
-.card-intro { font-size:10px; color:#777; margin-top:5px; line-height:1.4; height:2.8em; overflow:hidden; }
-
-/* 詳細ページ */
-#detail-img { width:100%; padding-top:100%; background-size:cover; }
-.detail-prof { padding:20px; }
-.detail-prof h2 { color:var(--primary); margin:0 0 10px; }
-.detail-meta { font-size:14px; background:#fdf2f8; padding:8px 15px; border-radius:20px; border:1px solid #fce7f3; display:inline-block; margin-bottom:15px; font-weight:bold; color:#555; }
-.detail-intro-box { background:#fff9fb; padding:15px; border-radius:8px; font-size:14px; line-height:1.6; color:#444; border:1px solid #ffeef5; }
+.cast-info h3 { margin:0 0 5px; color:var(--primary); font-size:16px; }
+.detail-meta { font-size:14px; font-weight:bold; color:#555; margin-bottom:15px; background:#fdf2f8; display:inline-block; padding:8px 15px; border-radius:20px; border:1px solid #fce7f3; }
 h3.sch-title { margin-top:30px; border-left:5px solid var(--primary); padding-left:10px; font-size:18px; color:#333; margin-bottom:15px; }
-
-/* スケジュール表 */
-.sch-wrapper { overflow-x:auto; }
 .sch-table { width:100%; border-collapse:collapse; font-size:12px; text-align:center; table-layout:fixed; }
 .sch-table th { background:#f9f9f9; padding:8px 2px; border:1px solid #eee; }
-.sch-table td { padding:8px 2px; border:1px solid #eee; height:40px; vertical-align:middle; }
-.col-sat { color:blue; background:#f0f8ff; } .col-sun { color:red; background:#fff0f0; }
+.sch-table td { padding:8px 2px; border:1px solid #eee; height:40px; }
 .cell-ok { color:var(--primary); font-weight:bold; font-size:20px; cursor:pointer; background:#fff0f5; }
-.cell-ng { color:#ddd; font-size:16px; }
-
-/* 管理画面シフト入力 */
-.ws-row { display:flex; align-items:center; padding:10px; border-bottom:1px solid #eee; }
-.ws-date { width:140px; font-weight:bold; }
-.ws-inputs { display:flex; gap:10px; flex:1; }
-.ws-inputs select { margin:0; }
+.hidden { display:none!important; }
+/* 共通パーツ */
+input, select, textarea { width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box; margin-bottom:10px; }
+.btn-primary { background:var(--primary); color:#fff; border:none; padding:10px 20px; border-radius:4px; cursor:pointer; }
+.btn-danger { background:#dc2626; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px; }
